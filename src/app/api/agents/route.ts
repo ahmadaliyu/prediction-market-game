@@ -1,10 +1,16 @@
 import { NextResponse } from 'next/server';
-import { AI_AGENTS, MOCK_MARKETS } from '@/lib/constants';
+import { AI_AGENTS } from '@/lib/constants';
+
+interface MarketInput {
+  id: number;
+  question: string;
+  yesPercent: number;
+}
 
 // AI Agent decision logic
 function makeAIDecision(
   personality: string,
-  market: typeof MOCK_MARKETS[0]
+  market: MarketInput
 ): { position: 'YES' | 'NO'; confidence: number; reasoning: string } {
   const yesPercent = market.yesPercent;
 
@@ -54,28 +60,20 @@ function makeAIDecision(
 // GET /api/agents - Get all AI agent states and decisions
 export async function GET() {
   try {
-    const agentDecisions = AI_AGENTS.map((agent) => {
-      // Pick a random market for each agent to analyze
-      const market = MOCK_MARKETS[Math.floor(Math.random() * MOCK_MARKETS.length)];
-      const decision = makeAIDecision(agent.personality, market);
-
-      return {
-        ...agent,
-        agentAddress: `0x${agent.name.toLowerCase().padStart(40, '0')}`,
-        isActive: true,
-        totalPredictions: Math.floor(Math.random() * 100) + 20,
-        correctPredictions: Math.floor(Math.random() * 60) + 10,
-        currentDecision: {
-          marketId: market.id,
-          marketQuestion: market.question,
-          ...decision,
-        },
-      };
-    });
+    // Agents return their profile info. Decision-making requires live market data
+    // which is now fetched from the chain on the frontend.
+    const agentProfiles = AI_AGENTS.map((agent) => ({
+      ...agent,
+      agentAddress: `0x${agent.name.toLowerCase().padStart(40, '0')}`,
+      isActive: true,
+      totalPredictions: 0,
+      correctPredictions: 0,
+      currentDecision: null,
+    }));
 
     return NextResponse.json({
       success: true,
-      data: agentDecisions,
+      data: agentProfiles,
     });
   } catch (error) {
     console.error('Failed to fetch AI agents:', error);

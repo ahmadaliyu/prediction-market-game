@@ -1,44 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { MOCK_MARKETS } from '@/lib/constants';
 
-// GET /api/markets - Fetch all markets
+// GET /api/markets - Markets are now fetched directly from the chain via useContracts.
+// This route is kept as a placeholder for off-chain metadata extensions.
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const category = searchParams.get('category');
-    const status = searchParams.get('status');
-    const sort = searchParams.get('sort') || 'newest';
-
-    let markets = [...MOCK_MARKETS];
-
-    // Filter by category
-    if (category && category !== 'all') {
-      markets = markets.filter((m) => m.category === category);
-    }
-
-    // Filter by status
-    if (status) {
-      markets = markets.filter((m) => m.status === status);
-    }
-
-    // Sort
-    switch (sort) {
-      case 'volume':
-        markets.sort((a, b) => parseFloat(b.totalPool) - parseFloat(a.totalPool));
-        break;
-      case 'ending':
-        markets.sort((a, b) => a.endTime - b.endTime);
-        break;
-      case 'newest':
-      default:
-        markets.sort((a, b) => b.createdAt - a.createdAt);
-        break;
-    }
-
     return NextResponse.json({
       success: true,
-      data: markets,
-      total: markets.length,
+      data: [],
+      total: 0,
+      message: 'Markets are loaded from on-chain contracts. Use the frontend directly.',
     });
   } catch (error) {
     console.error('Failed to fetch markets:', error);

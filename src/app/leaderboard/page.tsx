@@ -26,6 +26,16 @@ export default function LeaderboardPage() {
           <p className="text-gray-400">Top predictors and AI agents ranked by performance</p>
         </motion.div>
 
+        {players.length === 0 ? (
+          <div className="text-center py-20">
+            <Trophy className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+            <h2 className="text-xl font-bold text-white mb-2">No players yet</h2>
+            <p className="text-gray-400 text-sm">
+              Create markets and place bets to start climbing the leaderboard.
+            </p>
+          </div>
+        ) : (
+        <>
         {/* Top 3 podium */}
         <div className="grid grid-cols-3 gap-4 mb-8">
           {players.slice(0, 3).map((player, i) => {
@@ -139,6 +149,8 @@ export default function LeaderboardPage() {
             </table>
           </div>
         </div>
+        </>
+        )}
       </div>
     </main>
   );

@@ -55,34 +55,41 @@ prediction-market-game/
 ├── contracts/                    # Solidity smart contracts
 │   ├── PredictionMarket.sol      # Core betting & resolution logic
 │   └── MarketFactory.sol         # Factory + player stats + leaderboard
+├── ignition/
+│   └── modules/
+│       └── PredictionMarket.ts   # Hardhat Ignition deployment module
 ├── scripts/
-│   └── deploy.ts                 # Hardhat deployment script
+│   └── deploy.ts                 # Legacy deploy script (alternative)
 ├── src/
 │   ├── app/                      # Next.js App Router pages
 │   │   ├── page.tsx              # Home — 3D arena + hero + live markets
 │   │   ├── markets/page.tsx      # Browse & filter all markets
 │   │   ├── leaderboard/page.tsx  # Rankings with top-3 podium
-│   │   ├── portfolio/page.tsx    # Your bets, stats, history
-│   │   ├── create/page.tsx       # Create a new market
+│   │   ├── portfolio/page.tsx    # Your bets, stats, claim winnings
+│   │   ├── create/page.tsx       # Create a new market (on-chain tx)
+│   │   ├── providers.tsx         # WalletProvider + MarketLoader
 │   │   ├── api/                  # API routes (markets, agents, leaderboard)
-│   │   ├── layout.tsx            # Root layout + fonts
+│   │   ├── layout.tsx            # Root layout + fonts + providers
 │   │   └── globals.css           # Tailwind + custom utilities
 │   ├── components/
 │   │   ├── 3d/                   # React Three Fiber components
-│   │   │   ├── ArenaScene.tsx    # Main Canvas with postprocessing
+│   │   │   ├── ArenaScene.tsx    # Main Canvas with camera + fog
 │   │   │   ├── MarketOrb.tsx     # Floating market spheres
 │   │   │   ├── AIAgentAvatar.tsx # 3D AI agent characters
 │   │   │   ├── ParticleField.tsx # 500-particle ambient effect
 │   │   │   └── ArenaFloor.tsx    # Grid floor + ring lights
-│   │   └── ui/                   # React UI components
-│   │       ├── Navbar.tsx        # Navigation with route animations
-│   │       ├── WalletButton.tsx  # MetaMask connect/disconnect
-│   │       ├── MarketCard.tsx    # Market display card
-│   │       ├── BettingPanel.tsx  # Slide-in betting interface
-│   │       └── AIAgentCard.tsx   # AI agent profile card
+│   │   ├── ui/                   # React UI components
+│   │   │   ├── Navbar.tsx        # Navigation with route animations
+│   │   │   ├── WalletButton.tsx  # MetaMask connect/disconnect
+│   │   │   ├── MarketCard.tsx    # Market display card
+│   │   │   ├── BettingPanel.tsx  # Slide-in betting interface
+│   │   │   └── AIAgentCard.tsx   # AI agent profile card
+│   │   └── MarketLoader.tsx      # Auto-fetches markets from chain on mount
+│   ├── contexts/
+│   │   └── WalletContext.tsx     # Shared wallet + contract context
 │   ├── hooks/
 │   │   ├── useWallet.ts          # Wallet connection + chain switching
-│   │   └── useContracts.ts       # Smart contract interactions
+│   │   └── useContracts.ts       # Smart contract read/write methods
 │   ├── store/
 │   │   └── index.ts              # Zustand stores (app, markets, agents, leaderboard)
 │   ├── lib/
@@ -105,47 +112,163 @@ prediction-market-game/
 
 - **Node.js** ≥ 18
 - **MetaMask** browser extension
-- **AVAX** on Fuji testnet ([faucet](https://faucet.avax.network/))
+- **AVAX** on Fuji testnet ([faucet](https://faucet.avax.network/)) — only needed for Fuji deployment
 
 ### 1. Clone & Install
 
 ```bash
-git clone https://github.com/<your-username>/prediction-market-game.git
+git clone https://github.com/ahmadaliyu/prediction-market-game.git
 cd prediction-market-game
 npm install
 ```
 
-### 2. Environment Setup
+### 2. Compile Contracts
+
+```bash
+npx hardhat compile
+```
+
+This compiles both `PredictionMarket.sol` and `MarketFactory.sol` and generates TypeChain typings.
+
+---
+
+## 🔧 Deploying Smart Contracts
+
+Contracts are deployed using [Hardhat Ignition](https://hardhat.org/ignition), the official declarative deployment system. The Ignition module is at `ignition/modules/PredictionMarket.ts`.
+
+### Option A: Deploy to Local Hardhat Node (for development)
+
+**Step 1 — Start a local blockchain node:**
+
+```bash
+npx hardhat node
+```
+
+This starts a local JSON-RPC server at `http://127.0.0.1:8545` with 20 pre-funded accounts (10,000 ETH each). Keep this terminal running.
+
+**Step 2 — Deploy contracts (in a new terminal):**
+
+```bash
+npx hardhat ignition deploy ignition/modules/PredictionMarket.ts --network localhost
+```
+
+You'll see output like:
+
+```
+Deployed Addresses
+
+PredictionMarketModule#PredictionMarket - 0x5FbDB2315678afecb367f032d93F642f64180aa3
+PredictionMarketModule#MarketFactory - 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512
+```
+
+**Step 3 — Create `.env.local`:**
 
 ```bash
 cp .env.example .env.local
 ```
 
-Fill in your values:
+Paste the deployed addresses into `.env.local`:
 
 ```env
-FUJI_RPC_URL=https://api.avax-test.network/ext/bc/C/rpc
-PRIVATE_KEY=<deployer-private-key>
-NEXT_PUBLIC_PREDICTION_MARKET_ADDRESS=<after-deploy>
-NEXT_PUBLIC_MARKET_FACTORY_ADDRESS=<after-deploy>
+NEXT_PUBLIC_PREDICTION_MARKET_ADDRESS=0x5FbDB2315678afecb367f032d93F642f64180aa3
+NEXT_PUBLIC_MARKET_FACTORY_ADDRESS=0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512
+NEXT_PUBLIC_CHAIN_ID=
+NEXT_PUBLIC_RPC_URL=http://127.0.0.1:8545
+PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
 ```
 
-### 3. Deploy Contracts (Fuji Testnet)
+> When `NEXT_PUBLIC_CHAIN_ID` is empty, the app defaults to localhost (chainId 31337).
+
+**Step 4 — Add the local network to MetaMask:**
+
+| Field | Value |
+|-------|-------|
+| Network Name | Localhost 8545 |
+| RPC URL | `http://127.0.0.1:8545` |
+| Chain ID | `31337` |
+| Currency Symbol | ETH |
+
+**Step 5 — Import a test account into MetaMask:**
+
+Use Hardhat Account #0 private key:
+
+```
+0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+```
+
+This account has 10,000 ETH for testing.
+
+> ⚠️ **Never send real funds to Hardhat test accounts.** Their private keys are publicly known.
+
+### Option B: Deploy to Avalanche Fuji Testnet
+
+**Step 1 — Get test AVAX from the [Avalanche Faucet](https://faucet.avax.network/).**
+
+**Step 2 — Set your private key in `.env.local`:**
+
+```env
+PRIVATE_KEY=<your-deployer-wallet-private-key>
+FUJI_RPC_URL=https://api.avax-test.network/
+NEXT_PUBLIC_CHAIN_ID=43113
+```
+
+**Step 3 — Deploy:**
 
 ```bash
-npx hardhat compile
-npx hardhat run scripts/deploy.ts --network fuji
+npx hardhat ignition deploy ignition/modules/PredictionMarket.ts --network fuji
 ```
 
-Copy the deployed addresses into `.env.local`.
+**Step 4 — Copy the deployed addresses into `.env.local`:**
 
-### 4. Run Development Server
+```env
+NEXT_PUBLIC_PREDICTION_MARKET_ADDRESS=<PredictionMarket address from output>
+NEXT_PUBLIC_MARKET_FACTORY_ADDRESS=<MarketFactory address from output>
+```
+
+Ignition stores deployment artifacts in `ignition/deployments/chain-43113/`. Commit this folder to version your deployments.
+
+### Option C: Simulated Deployment (no node needed)
+
+To quickly verify the deployment definition works:
+
+```bash
+npx hardhat ignition deploy ignition/modules/PredictionMarket.ts
+```
+
+This runs against an in-memory network and finishes instantly. Useful for CI/testing — no addresses are persisted.
+
+---
+
+## 🖥️ Running the App
+
+After deploying contracts and setting `.env.local`:
 
 ```bash
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
+
+### How the frontend connects to contracts
+
+The app is fully wired to the smart contracts:
+
+1. **`WalletContext`** (`src/contexts/WalletContext.tsx`) — wraps the entire app, provides the connected wallet's `signer` and all contract methods to every page via React context.
+
+2. **`useContracts`** (`src/hooks/useContracts.ts`) — all blockchain interactions:
+   - `createMarket()` → calls `PredictionMarket.createMarket()` on-chain
+   - `placeBet()` → sends AVAX to the contract with `placeBet(marketId, position)`
+   - `claimWinnings()` → withdraws winnings from resolved markets
+   - `getAllMarkets()` → reads all markets from the contract (works without wallet via read-only provider)
+   - `getUserBets()` → reads a user's bet history from chain
+   - `getMarket()` → fetches a single market's current state
+
+3. **`MarketLoader`** (`src/components/MarketLoader.tsx`) — runs on app mount, fetches all markets from the contract and populates the Zustand store. Falls back to mock data if contracts aren't deployed.
+
+4. **Pages** — each page calls real contract methods:
+   - `/create` → `contracts.createMarket()` (sends a transaction)
+   - Home & `/markets` → `contracts.placeBet()` via the BettingPanel
+   - `/portfolio` → `contracts.getUserBets()` to show your positions + `contracts.claimWinnings()` button
 
 ---
 
@@ -189,36 +312,44 @@ Each AI agent has its own decision-making logic in `/src/app/api/agents/route.ts
 | Layer | Technology |
 |---|---|
 | **Frontend** | Next.js 14 (App Router), React 18, TypeScript |
-| **3D Engine** | React Three Fiber, Drei, Postprocessing |
+| **3D Engine** | React Three Fiber, Drei |
 | **Styling** | Tailwind CSS, Framer Motion |
 | **State** | Zustand |
 | **Blockchain** | Avalanche C-Chain, Solidity 0.8.24 |
 | **Web3** | Ethers.js v6, MetaMask |
-| **Contracts** | Hardhat, TypeChain |
+| **Contracts** | Hardhat, Hardhat Ignition, TypeChain |
 
 ---
 
 ## 📜 Available Scripts
 
 ```bash
-npm run dev          # Start dev server
+# Frontend
+npm run dev          # Start Next.js dev server on http://localhost:3000
 npm run build        # Production build
 npm run start        # Start production server
 npm run lint         # ESLint
-npx hardhat compile  # Compile Solidity contracts
+
+# Smart Contracts
+npx hardhat compile  # Compile Solidity contracts + generate TypeChain types
 npx hardhat test     # Run contract tests
-npm run deploy:fuji  # Deploy to Fuji testnet
-npm run node:local   # Start local Hardhat node
+npx hardhat node     # Start local Hardhat JSON-RPC node (port 8545)
+
+# Deployment (Hardhat Ignition)
+npx hardhat ignition deploy ignition/modules/PredictionMarket.ts --network localhost  # Local
+npx hardhat ignition deploy ignition/modules/PredictionMarket.ts --network fuji       # Fuji testnet
+npx hardhat ignition deploy ignition/modules/PredictionMarket.ts                      # In-memory (dry run)
 ```
 
 ---
 
 ## 🌐 Networks
 
-| Network | Chain ID | RPC |
-|---|---|---|
-| Avalanche Fuji (Testnet) | 43113 | `https://api.avax-test.network/ext/bc/C/rpc` |
-| Avalanche Mainnet | 43114 | `https://api.avax.network/ext/bc/C/rpc` |
+| Network | Chain ID | RPC | Notes |
+|---|---|---|---|
+| Localhost (Hardhat) | 31337 | `http://127.0.0.1:8545` | Default for development |
+| Avalanche Fuji (Testnet) | 43113 | `https://api.avax-test.network/` | Get test AVAX from [faucet](https://faucet.avax.network/) |
+| Avalanche Mainnet | 43114 | `https://api.avax.network/ext/bc/C/rpc` | Production |
 
 ---
 

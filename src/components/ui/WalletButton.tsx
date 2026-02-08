@@ -3,13 +3,13 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Wallet, ChevronDown, ExternalLink, Copy, LogOut } from 'lucide-react';
-import { useWallet } from '@/hooks/useWallet';
+import { useWalletContext } from '@/contexts/WalletContext';
 import { shortenAddress } from '@/lib/utils';
 import { ACTIVE_CHAIN } from '@/lib/constants';
 
 export default function WalletButton() {
   const { address, isConnected, balance, isCorrectChain, connect, disconnect, switchChain } =
-    useWallet();
+    useWalletContext();
   const [showDropdown, setShowDropdown] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
 

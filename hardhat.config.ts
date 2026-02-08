@@ -4,7 +4,7 @@ import * as dotenv from "dotenv";
 
 dotenv.config();
 
-const FUJI_RPC_URL = process.env.FUJI_RPC_URL || "https://api.avax-test.network/ext/bc/C/rpc";
+const FUJI_RPC_URL = process.env.FUJI_RPC_URL || "https://api.avax-test.network/";
 const PRIVATE_KEY = process.env.PRIVATE_KEY || "0x0000000000000000000000000000000000000000000000000000000000000001";
 const SNOWTRACE_API_KEY = process.env.SNOWTRACE_API_KEY || "";
 
@@ -21,7 +21,11 @@ const config: HardhatUserConfig = {
   },
   networks: {
     hardhat: {
-      chainId: 43113,
+      chainId: 31337,
+    },
+    localhost: {
+      url: "http://127.0.0.1:8545",
+      chainId: 31337,
     },
     fuji: {
       url: FUJI_RPC_URL,

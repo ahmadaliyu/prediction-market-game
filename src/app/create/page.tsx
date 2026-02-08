@@ -2,30 +2,67 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { PlusCircle, Calendar, Tag, ImageIcon, Loader2, CheckCircle } from 'lucide-react';
+import { PlusCircle, Calendar, Tag, ImageIcon, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import Navbar from '@/components/ui/Navbar';
 import { CATEGORIES } from '@/lib/constants';
-import { useWallet } from '@/hooks/useWallet';
+import { useWalletContext } from '@/contexts/WalletContext';
+import { useMarketStore } from '@/store';
 
 export default function CreatePage() {
-  const { isConnected } = useWallet();
+  const { isConnected, isCorrectChain, contracts } = useWalletContext();
+  const addMarket = useMarketStore((s) => s.addMarket);
   const [question, setQuestion] = useState('');
   const [category, setCategory] = useState('crypto');
   const [endDate, setEndDate] = useState('');
   const [imageURI, setImageURI] = useState('');
   const [isCreating, setIsCreating] = useState(false);
   const [created, setCreated] = useState(false);
+  const [error, setError] = useState('');
+  const [txHash, setTxHash] = useState('');
 
   const handleCreate = async () => {
     if (!question || !endDate) return;
+    if (!isConnected) {
+      setError('Please connect your wallet first');
+      return;
+    }
+    if (!isCorrectChain) {
+      setError('Please switch to the Avalanche network');
+      return;
+    }
 
     setIsCreating(true);
+    setError('');
+
     try {
-      // In production this would call the smart contract
-      await new Promise((r) => setTimeout(r, 2000));
+      const endTimestamp = Math.floor(new Date(endDate).getTime() / 1000);
+      if (endTimestamp <= Math.floor(Date.now() / 1000)) {
+        setError('End date must be in the future');
+        setIsCreating(false);
+        return;
+      }
+
+      const receipt = await contracts.createMarket(question, imageURI || '', category, endTimestamp);
+      setTxHash(receipt.hash || '');
+
+      // Refresh the market from chain and add to store
+      const allMarkets = await contracts.getAllMarkets();
+      if (allMarkets.length > 0) {
+        const newMarket = allMarkets[allMarkets.length - 1];
+        addMarket(newMarket);
+      }
+
       setCreated(true);
     } catch (err) {
       console.error('Failed to create market:', err);
+      const msg = err instanceof Error ? err.message : 'Failed to create market';
+      if (msg.includes('user rejected')) {
+        setError('Transaction was rejected');
+      } else if (msg.includes('Connect your wallet')) {
+        setError('Contract not deployed. Set NEXT_PUBLIC_PREDICTION_MARKET_ADDRESS in .env.local');
+      } else {
+        setError(msg);
+      }
     } finally {
       setIsCreating(false);
     }
@@ -44,6 +81,11 @@ export default function CreatePage() {
             <CheckCircle className="w-16 h-16 text-arena-green mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-white mb-2">Market Created!</h2>
             <p className="text-gray-400 mb-6">Your prediction market is now live on the arena.</p>
+            {txHash && (
+              <p className="text-xs text-gray-500 mb-4 font-mono">
+                Tx: <a href={`https://testnet.snowtrace.io/tx/${txHash}`} target="_blank" rel="noopener noreferrer" className="text-arena-primary hover:underline">{txHash.slice(0, 10)}...{txHash.slice(-8)}</a>
+              </p>
+            )}
             <div className="flex gap-3 justify-center">
               <a
                 href="/markets"
@@ -177,6 +219,14 @@ export default function CreatePage() {
               />
             </div>
 
+            {/* Error */}
+            {error && (
+              <div className="flex items-center gap-2 px-4 py-3 bg-red-500/10 border border-red-500/30 rounded-xl">
+                <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
+                <span className="text-sm text-red-400">{error}</span>
+              </div>
+            )}
+
             {/* Submit */}
             <button
               onClick={handleCreate}
@@ -189,7 +239,7 @@ export default function CreatePage() {
             >
               {isCreating ? (
                 <span className="flex items-center justify-center gap-2">
-                  <Loader2 className="w-4 h-4 animate-spin" /> Creating Market...
+                  <Loader2 className="w-4 h-4 animate-spin" /> Sending Transaction...
                 </span>
               ) : (
                 'Create Prediction Market'

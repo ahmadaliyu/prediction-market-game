@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { MarketDisplay, AIAgentDisplay, PlayerStatsDisplay } from '@/lib/types';
-import { MOCK_MARKETS, AI_AGENTS } from '@/lib/constants';
+import { AI_AGENTS } from '@/lib/constants';
 
 interface AppStore {
   isLoading: boolean;
@@ -45,8 +45,8 @@ interface MarketStore {
 }
 
 export const useMarketStore = create<MarketStore>((set, get) => ({
-  markets: MOCK_MARKETS as unknown as MarketDisplay[],
-  filteredMarkets: MOCK_MARKETS as unknown as MarketDisplay[],
+  markets: [],
+  filteredMarkets: [],
   selectedCategory: 'all',
   searchQuery: '',
   sortBy: 'newest',
@@ -129,21 +129,12 @@ const initialAgents: AIAgentDisplay[] = AI_AGENTS.map((a, i) => ({
   avatarURI: a.avatar,
   agentAddress: `0x${(i + 1).toString(16).padStart(40, '0')}`,
   isActive: true,
-  totalPredictions: Math.floor(Math.random() * 100) + 20,
-  correctPredictions: Math.floor(Math.random() * 60) + 10,
+  totalPredictions: 0,
+  correctPredictions: 0,
   accuracy: 0,
   color: a.color,
   description: a.description,
-  currentBet: {
-    marketId: Math.floor(Math.random() * 6),
-    position: Math.random() > 0.5 ? 'YES' as const : 'NO' as const,
-    confidence: Math.floor(Math.random() * 40) + 60,
-  },
-})).map((a) => ({
-  ...a,
-  accuracy: a.totalPredictions > 0
-    ? Math.round((a.correctPredictions / a.totalPredictions) * 100)
-    : 0,
+  currentBet: undefined,
 }));
 
 export const useAIAgentStore = create<AIAgentStore>((set) => ({
@@ -161,85 +152,7 @@ interface LeaderboardStore {
   setPlayers: (players: PlayerStatsDisplay[]) => void;
 }
 
-const mockPlayers: PlayerStatsDisplay[] = [
-  {
-    address: '0xDEAD...BEEF',
-    name: 'CryptoKing',
-    isAI: false,
-    totalBets: 47,
-    totalWins: 32,
-    totalAmountBet: '156.80',
-    totalWinnings: '289.50',
-    currentStreak: 5,
-    bestStreak: 8,
-    gamesPlayed: 47,
-    winRate: 68.1,
-    rank: 1,
-    pnl: '+132.70',
-  },
-  {
-    address: '0xA1B2...APEX',
-    name: 'APEX',
-    isAI: true,
-    totalBets: 38,
-    totalWins: 25,
-    totalAmountBet: '98.40',
-    totalWinnings: '167.20',
-    currentStreak: 3,
-    bestStreak: 6,
-    gamesPlayed: 38,
-    winRate: 65.8,
-    rank: 2,
-    pnl: '+68.80',
-  },
-  {
-    address: '0x1234...5678',
-    name: 'AvalancheWhale',
-    isAI: false,
-    totalBets: 52,
-    totalWins: 29,
-    totalAmountBet: '210.00',
-    totalWinnings: '265.30',
-    currentStreak: 1,
-    bestStreak: 7,
-    gamesPlayed: 52,
-    winRate: 55.8,
-    rank: 3,
-    pnl: '+55.30',
-  },
-  {
-    address: '0xC3D4...ORCL',
-    name: 'ORACLE',
-    isAI: true,
-    totalBets: 25,
-    totalWins: 14,
-    totalAmountBet: '75.00',
-    totalWinnings: '102.10',
-    currentStreak: 0,
-    bestStreak: 4,
-    gamesPlayed: 25,
-    winRate: 56.0,
-    rank: 4,
-    pnl: '+27.10',
-  },
-  {
-    address: '0x9876...5432',
-    name: 'DeFiDegen',
-    isAI: false,
-    totalBets: 61,
-    totalWins: 30,
-    totalAmountBet: '320.00',
-    totalWinnings: '298.40',
-    currentStreak: 0,
-    bestStreak: 5,
-    gamesPlayed: 61,
-    winRate: 49.2,
-    rank: 5,
-    pnl: '-21.60',
-  },
-];
-
 export const useLeaderboardStore = create<LeaderboardStore>((set) => ({
-  players: mockPlayers,
+  players: [],
   setPlayers: (players) => set({ players }),
 }));

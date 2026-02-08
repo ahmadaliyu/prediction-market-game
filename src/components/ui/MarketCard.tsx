@@ -89,7 +89,7 @@ export default function MarketCard({ market, onClick, index = 0 }: MarketCardPro
         <div className="flex items-center gap-1.5">
           <Users className="w-3.5 h-3.5 text-gray-500" />
           <span className="text-xs text-gray-400">
-            {Math.floor(Math.random() * 50) + 5} bettors
+            {((market.id * 7 + 13) % 50) + 5} bettors
           </span>
         </div>
       </div>

@@ -7,6 +7,7 @@ import Navbar from '@/components/ui/Navbar';
 import MarketCard from '@/components/ui/MarketCard';
 import BettingPanel from '@/components/ui/BettingPanel';
 import { useMarketStore, useAppStore } from '@/store';
+import { useWalletContext } from '@/contexts/WalletContext';
 import { CATEGORIES } from '@/lib/constants';
 import { MarketDisplay } from '@/lib/types';
 
@@ -25,11 +26,15 @@ export default function MarketsPage() {
 
   const selectedMarket = markets.find((m: MarketDisplay) => m.id === selectedMarketId);
   const [showFilters, setShowFilters] = useState(false);
+  const { contracts, isConnected } = useWalletContext();
+  const updateMarket = useMarketStore((s) => s.updateMarket);
 
   const handlePlaceBet = async (position: boolean, amount: string) => {
-    console.log('Placing bet:', { position, amount, marketId: selectedMarketId });
-    await new Promise((r) => setTimeout(r, 2000));
-    alert(`Bet placed! ${amount} AVAX on ${position ? 'YES' : 'NO'}`);
+    if (!isConnected) throw new Error('Connect your wallet first');
+    if (selectedMarketId === null) throw new Error('No market selected');
+    await contracts.placeBet(selectedMarketId, position, amount);
+    const updated = await contracts.getMarket(selectedMarketId);
+    if (updated) updateMarket(updated);
   };
 
   return (
@@ -141,7 +146,13 @@ export default function MarketsPage() {
         {markets.length === 0 && (
           <div className="text-center py-20">
             <p className="text-gray-500 text-lg">No markets found</p>
-            <p className="text-gray-600 text-sm mt-1">Try adjusting your filters</p>
+            <p className="text-gray-600 text-sm mt-1 mb-4">Create a new market or adjust your filters</p>
+            <a
+              href="/create"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-arena-primary to-arena-secondary text-black font-bold rounded-xl hover:shadow-[0_0_20px_rgba(0,240,255,0.3)] transition-all"
+            >
+              Create Market
+            </a>
           </div>
         )}
       </div>

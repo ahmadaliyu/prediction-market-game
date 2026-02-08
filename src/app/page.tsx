@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { motion } from 'framer-motion';
 import { Sparkles, ChevronDown, TrendingUp, Users, Zap, ArrowRight } from 'lucide-react';
@@ -7,7 +8,8 @@ import Navbar from '@/components/ui/Navbar';
 import MarketCard from '@/components/ui/MarketCard';
 import AIAgentCard from '@/components/ui/AIAgentCard';
 import BettingPanel from '@/components/ui/BettingPanel';
-import { useMarketStore, useAIAgentStore, useAppStore } from '@/store';
+import { useMarketStore, useAIAgentStore, useAppStore, useLeaderboardStore } from '@/store';
+import { useWalletContext } from '@/contexts/WalletContext';
 import { MarketDisplay } from '@/lib/types';
 
 // Dynamic import for 3D scene (no SSR)
@@ -25,19 +27,33 @@ const ArenaScene = dynamic(() => import('@/components/3d/ArenaScene'), {
 
 export default function HomePage() {
   const markets = useMarketStore((s) => s.filteredMarkets);
+  const allMarkets = useMarketStore((s) => s.markets);
   const agents = useAIAgentStore((s) => s.agents);
+  const players = useLeaderboardStore((s) => s.players);
   const selectedMarketId = useAppStore((s) => s.selectedMarketId);
   const showBettingPanel = useAppStore((s) => s.showBettingPanel);
   const selectMarket = useAppStore((s) => s.selectMarket);
   const show3DArena = useAppStore((s) => s.show3DArena);
 
+  const totalVolume = useMemo(() => {
+    return allMarkets.reduce((sum, m) => sum + parseFloat(m.totalPool || '0'), 0);
+  }, [allMarkets]);
+
+  const playerCount = useMemo(() => {
+    return players.filter((p) => !p.isAI).length;
+  }, [players]);
+
   const selectedMarket = markets.find((m: MarketDisplay) => m.id === selectedMarketId);
+  const { contracts, isConnected } = useWalletContext();
+  const updateMarket = useMarketStore((s) => s.updateMarket);
 
   const handlePlaceBet = async (position: boolean, amount: string) => {
-    // In production, this would call the contract
-    console.log('Placing bet:', { position, amount, marketId: selectedMarketId });
-    await new Promise((r) => setTimeout(r, 2000)); // Simulate tx
-    alert(`Bet placed! ${amount} AVAX on ${position ? 'YES' : 'NO'}`);
+    if (!isConnected) throw new Error('Connect your wallet first');
+    if (selectedMarketId === null) throw new Error('No market selected');
+    await contracts.placeBet(selectedMarketId, position, amount);
+    // Refresh the market data from chain after betting
+    const updated = await contracts.getMarket(selectedMarketId);
+    if (updated) updateMarket(updated);
   };
 
   return (
@@ -114,21 +130,21 @@ export default function HomePage() {
                   <TrendingUp className="w-4 h-4 text-arena-primary" />
                   <span className="text-xs text-gray-400">Total Volume</span>
                 </div>
-                <span className="text-xl font-bold text-white">358.3 AVAX</span>
+                <span className="text-xl font-bold text-white">{totalVolume.toFixed(1)} AVAX</span>
               </div>
               <div className="text-center">
                 <div className="flex items-center justify-center gap-2 mb-1">
                   <Zap className="w-4 h-4 text-arena-gold" />
                   <span className="text-xs text-gray-400">Active Markets</span>
                 </div>
-                <span className="text-xl font-bold text-white">{markets.length}</span>
+                <span className="text-xl font-bold text-white">{allMarkets.length}</span>
               </div>
               <div className="text-center">
                 <div className="flex items-center justify-center gap-2 mb-1">
                   <Users className="w-4 h-4 text-arena-green" />
                   <span className="text-xs text-gray-400">Players</span>
                 </div>
-                <span className="text-xl font-bold text-white">127</span>
+                <span className="text-xl font-bold text-white">{playerCount}</span>
               </div>
               <div className="text-center">
                 <div className="flex items-center justify-center gap-2 mb-1">
@@ -174,14 +190,28 @@ export default function HomePage() {
           </a>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {markets.slice(0, 6).map((market: MarketDisplay, i: number) => (
-            <MarketCard
-              key={market.id}
-              market={market}
-              index={i}
-              onClick={() => selectMarket(market.id)}
-            />
-          ))}
+          {markets.length > 0 ? (
+            markets.slice(0, 6).map((market: MarketDisplay, i: number) => (
+              <MarketCard
+                key={market.id}
+                market={market}
+                index={i}
+                onClick={() => selectMarket(market.id)}
+              />
+            ))
+          ) : (
+            <div className="col-span-full text-center py-16">
+              <Zap className="w-10 h-10 text-gray-600 mx-auto mb-3" />
+              <h3 className="text-lg font-bold text-white mb-1">No markets yet</h3>
+              <p className="text-gray-400 text-sm mb-4">Be the first to create a prediction market.</p>
+              <a
+                href="/create"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-arena-primary to-arena-secondary text-black font-bold rounded-xl hover:shadow-[0_0_20px_rgba(0,240,255,0.3)] transition-all"
+              >
+                Create Market <ArrowRight className="w-4 h-4" />
+              </a>
+            </div>
+          )}
         </div>
       </section>
 

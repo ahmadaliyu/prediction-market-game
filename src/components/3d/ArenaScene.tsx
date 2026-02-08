@@ -1,10 +1,8 @@
 'use client';
 
-import { Suspense, useMemo } from 'react';
+import { Suspense, useMemo, Component, ReactNode } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Stars, Environment, PerspectiveCamera } from '@react-three/drei';
-import { EffectComposer, Bloom, ChromaticAberration, Vignette } from '@react-three/postprocessing';
-import { BlendFunction } from 'postprocessing';
+import { OrbitControls, Stars, PerspectiveCamera } from '@react-three/drei';
 import MarketOrb from './MarketOrb';
 import AIAgentAvatar from './AIAgentAvatar';
 import ParticleField from './ParticleField';
@@ -12,7 +10,24 @@ import ArenaFloor from './ArenaFloor';
 import { useMarketStore, useAIAgentStore, useAppStore } from '@/store';
 import { getCategoryConfig } from '@/lib/utils';
 import { MarketDisplay, AIAgentDisplay } from '@/lib/types';
-import * as THREE from 'three';
+
+// Error boundary to catch WebGL / Three.js crashes
+class CanvasErrorBoundary extends Component<
+  { children: ReactNode; fallback: ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: ReactNode; fallback: ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  render() {
+    if (this.state.hasError) return this.props.fallback;
+    return this.props.children;
+  }
+}
 
 function ArenaContent() {
   const markets = useMarketStore((s) => s.filteredMarkets);
@@ -68,7 +83,6 @@ function ArenaContent() {
 
       {/* Environment */}
       <Stars radius={50} depth={50} count={2000} factor={4} fade speed={1} />
-      <Environment preset="night" />
       <fog attach="fog" args={['#0a0a1a', 15, 40]} />
 
       {/* Arena Floor */}
@@ -102,45 +116,36 @@ function ArenaContent() {
         />
       ))}
 
-      {/* Post-processing effects */}
-      <EffectComposer>
-        <Bloom
-          luminanceThreshold={0.2}
-          luminanceSmoothing={0.9}
-          intensity={0.8}
-          mipmapBlur
-        />
-        <ChromaticAberration
-          blendFunction={BlendFunction.NORMAL}
-          offset={new THREE.Vector2(0.0005, 0.0005)}
-          radialModulation={false}
-          modulationOffset={0}
-        />
-        <Vignette
-          offset={0.3}
-          darkness={0.7}
-          blendFunction={BlendFunction.NORMAL}
-        />
-      </EffectComposer>
     </>
   );
 }
 
 export default function ArenaScene() {
+  const fallback = (
+    <div className="w-full h-full min-h-[500px] bg-arena-surface flex items-center justify-center">
+      <div className="text-center">
+        <p className="text-gray-400 text-sm">3D Arena could not load</p>
+        <p className="text-gray-500 text-xs mt-1">WebGL may not be supported in this browser</p>
+      </div>
+    </div>
+  );
+
   return (
     <div className="w-full h-full min-h-[500px] relative">
-      <Canvas
-        gl={{
-          antialias: true,
-          alpha: false,
-          powerPreference: 'high-performance',
-        }}
-        style={{ background: '#0a0a1a' }}
-      >
-        <Suspense fallback={null}>
-          <ArenaContent />
-        </Suspense>
-      </Canvas>
+      <CanvasErrorBoundary fallback={fallback}>
+        <Canvas
+          gl={{
+            antialias: true,
+            alpha: false,
+            powerPreference: 'high-performance',
+          }}
+          style={{ background: '#0a0a1a' }}
+        >
+          <Suspense fallback={null}>
+            <ArenaContent />
+          </Suspense>
+        </Canvas>
+      </CanvasErrorBoundary>
 
       {/* Overlay gradient */}
       <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-arena-surface to-transparent pointer-events-none" />

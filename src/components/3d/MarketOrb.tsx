@@ -2,7 +2,7 @@
 
 import { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { Sphere, Text, MeshDistortMaterial } from '@react-three/drei';
+import { Sphere, Text } from '@react-three/drei';
 import * as THREE from 'three';
 
 interface MarketOrbProps {
@@ -111,14 +111,12 @@ export default function MarketOrb({
           document.body.style.cursor = 'default';
         }}
       >
-        <MeshDistortMaterial
+        <meshStandardMaterial
           color={orbColor}
           emissive={orbColor}
           emissiveIntensity={isSelected ? 0.6 : 0.3}
           roughness={0.2}
           metalness={0.8}
-          distort={0.3}
-          speed={2}
           transparent
           opacity={0.9}
         />
@@ -137,7 +135,6 @@ export default function MarketOrb({
         color={yesPercent > 50 ? '#00FF88' : '#FF4444'}
         anchorX="center"
         anchorY="middle"
-        font="/fonts/inter-bold.woff"
         outlineWidth={0.02}
         outlineColor="#000000"
       >
