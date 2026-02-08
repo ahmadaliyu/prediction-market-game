@@ -9,9 +9,6 @@ import "./PredictionMarket.sol";
  * @dev Tracks all deployed markets and provides global leaderboard data
  */
 contract MarketFactory {
-    // ═══════════════════════════════════════════════════════════════
-    //                        STATE VARIABLES
-    // ═══════════════════════════════════════════════════════════════
 
     address public owner;
     PredictionMarket public predictionMarket;
@@ -45,26 +42,14 @@ contract MarketFactory {
     mapping(address => AIAgent) public aiAgents;
     address[] public aiAgentAddresses;
 
-    // ═══════════════════════════════════════════════════════════════
-    //                          EVENTS
-    // ═══════════════════════════════════════════════════════════════
-
     event PlayerRegistered(address indexed player);
     event StatsUpdated(address indexed player, uint256 totalWins, uint256 totalBets);
     event AIAgentRegistered(address indexed agent, string name, string personality);
-
-    // ═══════════════════════════════════════════════════════════════
-    //                        CONSTRUCTOR
-    // ═══════════════════════════════════════════════════════════════
 
     constructor(address _predictionMarket) {
         owner = msg.sender;
         predictionMarket = PredictionMarket(payable(_predictionMarket));
     }
-
-    // ═══════════════════════════════════════════════════════════════
-    //                     PLAYER MANAGEMENT
-    // ═══════════════════════════════════════════════════════════════
 
     function registerPlayer() external {
         require(!isRegistered[msg.sender], "Already registered");
@@ -105,10 +90,6 @@ contract MarketFactory {
         emit StatsUpdated(_player, stats.totalWins, stats.totalBets);
     }
 
-    // ═══════════════════════════════════════════════════════════════
-    //                     AI AGENT MANAGEMENT
-    // ═══════════════════════════════════════════════════════════════
-
     function registerAIAgent(
         address _agentAddress,
         string calldata _name,
@@ -146,10 +127,6 @@ contract MarketFactory {
         }
     }
 
-    // ═══════════════════════════════════════════════════════════════
-    //                      VIEW FUNCTIONS
-    // ═══════════════════════════════════════════════════════════════
-
     function getPlayerStats(address _player) external view returns (PlayerStats memory) {
         return playerStats[_player];
     }
@@ -185,10 +162,6 @@ contract MarketFactory {
 
         return (topPlayers, topStats);
     }
-
-    // ═══════════════════════════════════════════════════════════════
-    //                      ADMIN FUNCTIONS
-    // ═══════════════════════════════════════════════════════════════
 
     function setPredictionMarket(address _market) external {
         require(msg.sender == owner, "Only owner");

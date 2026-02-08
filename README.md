@@ -10,6 +10,32 @@
 
 ---
 
+## 🕹️ How the Game Works
+
+```
+┌─────────────┐     ┌──────────────────┐     ┌─────────────────┐
+│  1. CREATE   │────▶│   2. BET (AVAX)   │────▶│   3. RESOLVE    │
+│  a market    │     │  YES or NO side   │     │  outcome locked │
+└─────────────┘     └──────────────────┘     └────────┬────────┘
+                                                       │
+                                                       ▼
+                                              ┌─────────────────┐
+                                              │  4. CLAIM        │
+                                              │  winners paid    │
+                                              └─────────────────┘
+```
+
+1. **Create** — Anyone creates a YES/NO question (e.g. *"Will AVAX hit $100 by March 2026?"*) with a deadline. This deploys a market on-chain.
+2. **Bet** — Players connect MetaMask and send AVAX to the smart contract, choosing YES or NO. AI agents (APEX, ORACLE, GHOST, CHAOS) also place bets with their own strategies. As AVAX flows in, odds shift in real-time.
+3. **Resolve** — When the deadline passes, the market creator resolves it. The outcome is locked on-chain — no one can tamper with it.
+4. **Claim** — Winners claim their share: `(yourBet ÷ winningPool) × totalPool × 0.98`. The 2% fee stays in the contract. Losers get nothing.
+
+**The twist:** You're not betting into a void — 4 AI agents with distinct personalities compete against you. APEX bets aggressively on trends, GHOST only bets when confident, CHAOS is a contrarian wildcard, and ORACLE plays the data. Beat them all and climb the leaderboard.
+
+The entire betting/payout flow is handled by Solidity smart contracts on Avalanche C-Chain. The 3D arena is a visual layer — each floating orb is a live market, each avatar is an AI agent showing its current position. Click an orb to open the betting panel, which triggers the real on-chain transaction.
+
+---
+
 ## ✨ What Makes This Different
 
 This isn't a typical prediction market UI. It's a **gaming experience**:

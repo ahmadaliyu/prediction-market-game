@@ -1,6 +1,3 @@
-// ═══════════════════════════════════════════════════════════════
-//                    MARKET TYPES
-// ═══════════════════════════════════════════════════════════════
 
 export interface Market {
   id: number;
@@ -39,10 +36,6 @@ export type MarketCategory =
 
 export type MarketStatus = 'active' | 'expired' | 'resolved';
 
-// ═══════════════════════════════════════════════════════════════
-//                      BET TYPES
-// ═══════════════════════════════════════════════════════════════
-
 export interface Bet {
   amount: bigint;
   position: boolean; // true = YES, false = NO
@@ -57,10 +50,6 @@ export interface BetDisplay {
   market?: MarketDisplay;
   potentialPayout?: string;
 }
-
-// ═══════════════════════════════════════════════════════════════
-//                    PLAYER TYPES
-// ═══════════════════════════════════════════════════════════════
 
 export interface PlayerStats {
   totalBets: number;
@@ -88,10 +77,6 @@ export interface PlayerStatsDisplay {
   pnl: string;
 }
 
-// ═══════════════════════════════════════════════════════════════
-//                    AI AGENT TYPES
-// ═══════════════════════════════════════════════════════════════
-
 export type AIPersonality = 'aggressive' | 'conservative' | 'balanced' | 'chaotic';
 
 export interface AIAgent {
@@ -115,9 +100,7 @@ export interface AIAgentDisplay extends AIAgent {
   };
 }
 
-// ═══════════════════════════════════════════════════════════════
 //                    3D SCENE TYPES
-// ═══════════════════════════════════════════════════════════════
 
 export interface MarketOrb {
   id: number;
@@ -135,10 +118,6 @@ export interface AgentAvatar {
   animationState: 'idle' | 'thinking' | 'betting' | 'celebrating';
 }
 
-// ═══════════════════════════════════════════════════════════════
-//                    APP STATE TYPES
-// ═══════════════════════════════════════════════════════════════
-
 export interface WalletState {
   address: string | null;
   isConnected: boolean;
@@ -154,10 +133,6 @@ export interface AppState {
   selectedMarketId: number | null;
   showBettingPanel: boolean;
 }
-
-// ═══════════════════════════════════════════════════════════════
-//                    API TYPES
-// ═══════════════════════════════════════════════════════════════
 
 export interface APIResponse<T = unknown> {
   success: boolean;

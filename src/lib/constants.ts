@@ -1,6 +1,3 @@
-// ═══════════════════════════════════════════════════════════════
-//                    CHAIN CONFIGURATION
-// ═══════════════════════════════════════════════════════════════
 
 export const AVALANCHE_FUJI = {
   chainId: 43113,
@@ -31,18 +28,10 @@ export const AVALANCHE_MAINNET = {
 // Use Fuji testnet by default
 export const ACTIVE_CHAIN = AVALANCHE_FUJI;
 
-// ═══════════════════════════════════════════════════════════════
-//                    CONTRACT ADDRESSES
-// ═══════════════════════════════════════════════════════════════
-
 export const CONTRACTS = {
   PREDICTION_MARKET: process.env.NEXT_PUBLIC_PREDICTION_MARKET_ADDRESS || '',
   MARKET_FACTORY: process.env.NEXT_PUBLIC_MARKET_FACTORY_ADDRESS || '',
 };
-
-// ═══════════════════════════════════════════════════════════════
-//                    MARKET CATEGORIES
-// ═══════════════════════════════════════════════════════════════
 
 export const CATEGORIES = [
   { id: 'crypto', label: 'Crypto', emoji: '₿', color: '#F7931A' },
@@ -54,10 +43,6 @@ export const CATEGORIES = [
   { id: 'gaming', label: 'Gaming', emoji: '🎮', color: '#E84142' },
   { id: 'other', label: 'Other', emoji: '🌐', color: '#888888' },
 ] as const;
-
-// ═══════════════════════════════════════════════════════════════
-//                    AI AGENTS CONFIG
-// ═══════════════════════════════════════════════════════════════
 
 export const AI_AGENTS = [
   {
@@ -94,10 +79,6 @@ export const AI_AGENTS = [
   },
 ];
 
-// ═══════════════════════════════════════════════════════════════
-//                    UI CONSTANTS
-// ═══════════════════════════════════════════════════════════════
-
 export const NAV_ITEMS = [
   { id: 'arena', label: 'Arena', icon: 'Gamepad2', href: '/' },
   { id: 'markets', label: 'Markets', icon: 'TrendingUp', href: '/markets' },
@@ -106,9 +87,7 @@ export const NAV_ITEMS = [
   { id: 'create', label: 'Create', icon: 'PlusCircle', href: '/create' },
 ] as const;
 
-// ═══════════════════════════════════════════════════════════════
 //                    MOCK MARKETS (for dev)
-// ═══════════════════════════════════════════════════════════════
 
 export const MOCK_MARKETS = [
   {

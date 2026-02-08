@@ -2,10 +2,6 @@ import { create } from 'zustand';
 import { MarketDisplay, AIAgentDisplay, PlayerStatsDisplay } from '@/lib/types';
 import { MOCK_MARKETS, AI_AGENTS } from '@/lib/constants';
 
-// ═══════════════════════════════════════════════════════════════
-//                      APP STORE
-// ═══════════════════════════════════════════════════════════════
-
 interface AppStore {
   isLoading: boolean;
   activeView: 'arena' | 'markets' | 'leaderboard' | 'portfolio';
@@ -32,10 +28,6 @@ export const useAppStore = create<AppStore>((set) => ({
     set((state) => ({ showBettingPanel: show ?? !state.showBettingPanel })),
   toggle3DArena: () => set((state) => ({ show3DArena: !state.show3DArena })),
 }));
-
-// ═══════════════════════════════════════════════════════════════
-//                     MARKET STORE
-// ═══════════════════════════════════════════════════════════════
 
 interface MarketStore {
   markets: MarketDisplay[];
@@ -124,10 +116,6 @@ export const useMarketStore = create<MarketStore>((set, get) => ({
   },
 }));
 
-// ═══════════════════════════════════════════════════════════════
-//                    AI AGENTS STORE
-// ═══════════════════════════════════════════════════════════════
-
 interface AIAgentStore {
   agents: AIAgentDisplay[];
   selectedAgent: AIAgentDisplay | null;
@@ -167,10 +155,6 @@ export const useAIAgentStore = create<AIAgentStore>((set) => ({
       agents: state.agents.map((a) => (a.name === agent.name ? agent : a)),
     })),
 }));
-
-// ═══════════════════════════════════════════════════════════════
-//                   LEADERBOARD STORE
-// ═══════════════════════════════════════════════════════════════
 
 interface LeaderboardStore {
   players: PlayerStatsDisplay[];

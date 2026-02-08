@@ -22,12 +22,9 @@ async function main() {
   console.log("✅ MarketFactory deployed to:", mfAddress);
 
   // Log deployment summary
-  console.log("\n═══════════════════════════════════════");
   console.log("   DEPLOYMENT SUMMARY");
-  console.log("═══════════════════════════════════════");
   console.log(`PredictionMarket: ${pmAddress}`);
   console.log(`MarketFactory:    ${mfAddress}`);
-  console.log("═══════════════════════════════════════");
   console.log("\n📝 Add these to your .env.local:");
   console.log(`NEXT_PUBLIC_PREDICTION_MARKET_ADDRESS=${pmAddress}`);
   console.log(`NEXT_PUBLIC_MARKET_FACTORY_ADDRESS=${mfAddress}`);

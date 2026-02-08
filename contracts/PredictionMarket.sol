@@ -7,9 +7,6 @@ pragma solidity ^0.8.24;
  * @dev Supports binary outcome markets with AVAX betting, fee collection, and resolution
  */
 contract PredictionMarket {
-    // ═══════════════════════════════════════════════════════════════
-    //                          STRUCTS
-    // ═══════════════════════════════════════════════════════════════
 
     struct Market {
         uint256 id;
@@ -31,10 +28,6 @@ contract PredictionMarket {
         bool claimed;
     }
 
-    // ═══════════════════════════════════════════════════════════════
-    //                        STATE VARIABLES
-    // ═══════════════════════════════════════════════════════════════
-
     address public owner;
     address public resolver; // authorized resolver (can be DAO or oracle)
     uint256 public marketCount;
@@ -48,10 +41,6 @@ contract PredictionMarket {
     mapping(address => uint256[]) public userMarkets;
     mapping(address => uint256) public userTotalWinnings;
     mapping(address => uint256) public userTotalBets;
-
-    // ═══════════════════════════════════════════════════════════════
-    //                          EVENTS
-    // ═══════════════════════════════════════════════════════════════
 
     event MarketCreated(
         uint256 indexed marketId,
@@ -78,10 +67,6 @@ contract PredictionMarket {
     );
     event FeesWithdrawn(address indexed to, uint256 amount);
 
-    // ═══════════════════════════════════════════════════════════════
-    //                         MODIFIERS
-    // ═══════════════════════════════════════════════════════════════
-
     modifier onlyOwner() {
         require(msg.sender == owner, "Not owner");
         _;
@@ -100,18 +85,10 @@ contract PredictionMarket {
         _;
     }
 
-    // ═══════════════════════════════════════════════════════════════
-    //                        CONSTRUCTOR
-    // ═══════════════════════════════════════════════════════════════
-
     constructor() {
         owner = msg.sender;
         resolver = msg.sender;
     }
-
-    // ═══════════════════════════════════════════════════════════════
-    //                      MARKET MANAGEMENT
-    // ═══════════════════════════════════════════════════════════════
 
     /**
      * @notice Create a new prediction market
@@ -245,10 +222,6 @@ contract PredictionMarket {
         emit WinningsClaimed(_marketId, msg.sender, payout);
     }
 
-    // ═══════════════════════════════════════════════════════════════
-    //                        VIEW FUNCTIONS
-    // ═══════════════════════════════════════════════════════════════
-
     function getMarket(uint256 _marketId) external view returns (Market memory) {
         return markets[_marketId];
     }
@@ -286,10 +259,6 @@ contract PredictionMarket {
         Market storage market = markets[_marketId];
         return market.totalYesAmount + market.totalNoAmount;
     }
-
-    // ═══════════════════════════════════════════════════════════════
-    //                      ADMIN FUNCTIONS
-    // ═══════════════════════════════════════════════════════════════
 
     function setResolver(address _resolver) external onlyOwner {
         resolver = _resolver;
