@@ -1,4 +1,5 @@
 import { MarketDisplay } from './types';
+import { ethers } from 'ethers';
 
 /**
  * Shorten an Ethereum address for display
@@ -9,19 +10,25 @@ export function shortenAddress(address: string, chars = 4): string {
 }
 
 /**
- * Format AVAX amount from wei to display string
+ * Format AVAX amount from wei to display string (precision-safe via ethers)
  */
 export function formatAVAX(wei: bigint | string, decimals = 4): string {
   const value = typeof wei === 'string' ? BigInt(wei) : wei;
-  const avax = Number(value) / 1e18;
-  return avax.toFixed(decimals);
+  const formatted = ethers.formatEther(value);
+  // Round to desired decimal places
+  const num = parseFloat(formatted);
+  if (num === 0) return '0';
+  // Show up to `decimals` places, but trim trailing zeros
+  const fixed = num.toFixed(decimals);
+  // Remove unnecessary trailing zeros: "2.0000" -> "2.0", "1.2500" -> "1.25"
+  return fixed.replace(/(\.\d*?)0+$/, '$1').replace(/\.$/, '.0');
 }
 
 /**
- * Parse AVAX display string to wei
+ * Parse AVAX display string to wei (precision-safe via ethers)
  */
 export function parseAVAX(avax: string): bigint {
-  return BigInt(Math.floor(Number(avax) * 1e18));
+  return ethers.parseEther(avax);
 }
 
 /**

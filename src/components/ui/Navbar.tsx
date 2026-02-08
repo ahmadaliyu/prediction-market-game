@@ -3,9 +3,9 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Gamepad2, TrendingUp, Trophy, Wallet, PlusCircle, Menu, X } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import WalletButton from './WalletButton';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const navItems = [
   { href: '/', label: 'Arena', icon: Gamepad2 },
@@ -18,20 +18,44 @@ const navItems = [
 export default function Navbar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-arena-surface/80 backdrop-blur-xl border-b border-arena-border/50">
+    <motion.nav
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      transition={{ type: 'spring', stiffness: 100, damping: 20 }}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500
+        ${scrolled
+          ? 'bg-arena-surface/95 backdrop-blur-xl border-b border-arena-border/50 shadow-[0_4px_30px_rgba(0,0,0,0.3)]'
+          : 'bg-arena-surface/60 backdrop-blur-lg border-b border-transparent'
+        }`}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 group">
             <div className="relative">
-              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-arena-primary to-arena-secondary 
-                            flex items-center justify-center group-hover:shadow-[0_0_20px_rgba(0,240,255,0.5)] 
-                            transition-shadow duration-300">
+              <motion.div
+                whileHover={{ rotate: [0, -5, 5, 0], scale: 1.1 }}
+                transition={{ duration: 0.5 }}
+                className="w-9 h-9 rounded-lg bg-gradient-to-br from-arena-primary to-arena-secondary 
+                          flex items-center justify-center group-hover:shadow-[0_0_25px_rgba(0,240,255,0.6)] 
+                          transition-shadow duration-300"
+              >
                 <span className="text-lg font-bold text-black">P</span>
-              </div>
-              <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-arena-green animate-pulse" />
+              </motion.div>
+              <motion.div
+                animate={{ scale: [1, 1.3, 1], opacity: [1, 0.6, 1] }}
+                transition={{ repeat: Infinity, duration: 2 }}
+                className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-arena-green"
+              />
             </div>
             <div className="hidden sm:block">
               <h1 className="text-base font-bold bg-gradient-to-r from-arena-primary to-arena-secondary bg-clip-text text-transparent">
@@ -115,6 +139,6 @@ export default function Navbar() {
           </div>
         </motion.div>
       )}
-    </nav>
+    </motion.nav>
   );
 }

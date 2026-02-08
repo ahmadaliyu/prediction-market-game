@@ -90,10 +90,17 @@ export function useContracts(signer: ethers.JsonRpcSigner | null) {
 
   const parseMarket = useCallback((raw: Market, bettorCount: number = 0): MarketDisplay => {
     const now = Math.floor(Date.now() / 1000);
+    // Debug: log raw contract values
+    console.log('[parseMarket] raw.endTime:', raw.endTime, 'type:', typeof raw.endTime, 'Number():', Number(raw.endTime));
+    console.log('[parseMarket] now:', now, 'diff:', Number(raw.endTime) - now);
+    console.log('[parseMarket] raw.totalYesAmount:', raw.totalYesAmount, 'type:', typeof raw.totalYesAmount);
+    console.log('[parseMarket] raw.totalNoAmount:', raw.totalNoAmount, 'type:', typeof raw.totalNoAmount);
     const isExpired = now >= Number(raw.endTime);
     const totalYes = typeof raw.totalYesAmount === 'bigint' ? raw.totalYesAmount : BigInt(String(raw.totalYesAmount));
     const totalNo = typeof raw.totalNoAmount === 'bigint' ? raw.totalNoAmount : BigInt(String(raw.totalNoAmount));
     const total = totalYes + totalNo;
+    console.log('[parseMarket] totalYes:', totalYes.toString(), 'totalNo:', totalNo.toString(), 'total:', total.toString());
+    console.log('[parseMarket] formatAVAX(total):', formatAVAX(total));
 
     return {
       id: Number(raw.id),

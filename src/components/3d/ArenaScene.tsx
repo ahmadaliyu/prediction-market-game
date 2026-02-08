@@ -69,6 +69,9 @@ function ArenaContent() {
       <OrbitControls
         enablePan={false}
         enableZoom={true}
+        enableDamping={true}
+        dampingFactor={0.08}
+        zoomSpeed={0.8}
         minDistance={5}
         maxDistance={25}
         maxPolarAngle={Math.PI / 2.1}
@@ -80,9 +83,12 @@ function ArenaContent() {
       {/* Lighting */}
       <ambientLight intensity={0.15} />
       <directionalLight position={[10, 10, 5]} intensity={0.3} color="#ffffff" />
+      <pointLight position={[0, 10, 0]} intensity={0.4} color="#00F0FF" distance={30} />
+      <pointLight position={[-10, 5, -10]} intensity={0.2} color="#FF00E5" distance={20} />
+      <pointLight position={[10, 5, 10]} intensity={0.2} color="#7B61FF" distance={20} />
 
       {/* Environment */}
-      <Stars radius={50} depth={50} count={2000} factor={4} fade speed={1} />
+      <Stars radius={50} depth={50} count={3000} factor={4} fade speed={0.8} />
       <fog attach="fog" args={['#0a0a1a', 15, 40]} />
 
       {/* Arena Floor */}
