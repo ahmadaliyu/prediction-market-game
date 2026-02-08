@@ -78,7 +78,17 @@ export function useContracts(signer: ethers.JsonRpcSigner | null) {
     [getWriteContract]
   );
 
-  const parseMarket = useCallback((raw: Market): MarketDisplay => {
+  const resolveMarket = useCallback(
+    async (marketId: number, outcome: boolean) => {
+      const contract = getWriteContract();
+      const tx = await contract.resolveMarket(marketId, outcome);
+      const receipt = await tx.wait();
+      return receipt;
+    },
+    [getWriteContract]
+  );
+
+  const parseMarket = useCallback((raw: Market, bettorCount: number = 0): MarketDisplay => {
     const now = Math.floor(Date.now() / 1000);
     const isExpired = now >= Number(raw.endTime);
     const totalYes = typeof raw.totalYesAmount === 'bigint' ? raw.totalYesAmount : BigInt(String(raw.totalYesAmount));
@@ -103,6 +113,7 @@ export function useContracts(signer: ethers.JsonRpcSigner | null) {
       timeRemaining: formatTimeRemaining(Number(raw.endTime)),
       isExpired,
       status: raw.resolved ? 'resolved' : isExpired ? 'expired' : 'active',
+      bettorCount,
     };
   }, []);
 
@@ -112,7 +123,14 @@ export function useContracts(signer: ethers.JsonRpcSigner | null) {
       if (!contract) return null;
       try {
         const raw: Market = await contract.getMarket(marketId);
-        return parseMarket(raw);
+        let bettorCount = 0;
+        try {
+          const bettors: string[] = await contract.getMarketBettors(marketId);
+          bettorCount = bettors.length;
+        } catch {
+          // ignore if getMarketBettors fails
+        }
+        return parseMarket(raw, bettorCount);
       } catch {
         return null;
       }
@@ -178,16 +196,98 @@ export function useContracts(signer: ethers.JsonRpcSigner | null) {
     [getMarketFactory]
   );
 
+  const getLeaderboard = useCallback(async (): Promise<{
+    address: string;
+    totalBet: string;
+    totalWon: string;
+    wins: number;
+    losses: number;
+    bets: number;
+  }[]> => {
+    const contract = getReadContract();
+    if (!contract) return [];
+    try {
+      const count = await contract.marketCount();
+      const playerMap = new Map<string, {
+        totalBet: bigint;
+        totalWon: bigint;
+        wins: number;
+        losses: number;
+        bets: number;
+      }>();
+
+      for (let i = 0; i < Number(count); i++) {
+        try {
+          const market = await contract.getMarket(i);
+          const bettors: string[] = await contract.getMarketBettors(i);
+
+          for (const bettor of bettors) {
+            const bet = await contract.getBet(i, bettor);
+            if (bet.amount === BigInt(0)) continue;
+
+            const stats = playerMap.get(bettor) || {
+              totalBet: BigInt(0),
+              totalWon: BigInt(0),
+              wins: 0,
+              losses: 0,
+              bets: 0,
+            };
+
+            stats.totalBet += bet.amount;
+            stats.bets += 1;
+
+            if (market.resolved) {
+              if (bet.position === market.outcome) {
+                stats.wins += 1;
+                // Calculate approximate payout
+                const totalPool = market.totalYesAmount + market.totalNoAmount;
+                const fee = (totalPool * BigInt(200)) / BigInt(10000);
+                const distributable = totalPool - fee;
+                const winningPool = market.outcome ? market.totalYesAmount : market.totalNoAmount;
+                if (winningPool > BigInt(0)) {
+                  stats.totalWon += (bet.amount * distributable) / winningPool;
+                }
+              } else {
+                stats.losses += 1;
+              }
+            }
+
+            playerMap.set(bettor, stats);
+          }
+        } catch {
+          continue;
+        }
+      }
+
+      const results = Array.from(playerMap.entries()).map(([address, stats]) => ({
+        address,
+        totalBet: formatAVAX(stats.totalBet),
+        totalWon: formatAVAX(stats.totalWon),
+        wins: stats.wins,
+        losses: stats.losses,
+        bets: stats.bets,
+      }));
+
+      // Sort by most wins, then by totalWon
+      results.sort((a, b) => b.wins - a.wins || parseFloat(b.totalWon) - parseFloat(a.totalWon));
+      return results;
+    } catch {
+      return [];
+    }
+  }, [getReadContract]);
+
   const contractsAvailable = !!CONTRACTS.PREDICTION_MARKET;
 
   return {
     createMarket,
     placeBet,
     claimWinnings,
+    resolveMarket,
     getMarket,
     getAllMarkets,
     getUserBets,
     getPlayerStats,
+    getLeaderboard,
     contractsAvailable,
   };
 }

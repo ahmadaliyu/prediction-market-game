@@ -22,6 +22,7 @@ export interface MarketDisplay extends Omit<Market, 'totalYesAmount' | 'totalNoA
   timeRemaining: string;
   isExpired: boolean;
   status: MarketStatus;
+  bettorCount: number;
 }
 
 export type MarketCategory =

@@ -6,6 +6,7 @@ import { Search, SlidersHorizontal } from 'lucide-react';
 import Navbar from '@/components/ui/Navbar';
 import MarketCard from '@/components/ui/MarketCard';
 import BettingPanel from '@/components/ui/BettingPanel';
+import ResolvePanel from '@/components/ui/ResolvePanel';
 import { useMarketStore, useAppStore } from '@/store';
 import { useWalletContext } from '@/contexts/WalletContext';
 import { CATEGORIES } from '@/lib/constants';
@@ -26,7 +27,8 @@ export default function MarketsPage() {
 
   const selectedMarket = markets.find((m: MarketDisplay) => m.id === selectedMarketId);
   const [showFilters, setShowFilters] = useState(false);
-  const { contracts, isConnected } = useWalletContext();
+  const [resolveMarketData, setResolveMarketData] = useState<MarketDisplay | null>(null);
+  const { contracts, isConnected, address } = useWalletContext();
   const updateMarket = useMarketStore((s) => s.updateMarket);
 
   const handlePlaceBet = async (position: boolean, amount: string) => {
@@ -35,6 +37,23 @@ export default function MarketsPage() {
     await contracts.placeBet(selectedMarketId, position, amount);
     const updated = await contracts.getMarket(selectedMarketId);
     if (updated) updateMarket(updated);
+  };
+
+  const handleResolve = async (outcome: boolean) => {
+    if (!resolveMarketData) return;
+    await contracts.resolveMarket(resolveMarketData.id, outcome);
+    const updated = await contracts.getMarket(resolveMarketData.id);
+    if (updated) updateMarket(updated);
+  };
+
+  const handleMarketClick = (market: MarketDisplay) => {
+    // If market is expired/ended and user is the creator, show resolve panel
+    if (market.isExpired && !market.resolved && address &&
+        market.creator.toLowerCase() === address.toLowerCase()) {
+      setResolveMarketData(market);
+    } else {
+      selectMarket(market.id);
+    }
   };
 
   return (
@@ -138,7 +157,7 @@ export default function MarketsPage() {
               key={market.id}
               market={market}
               index={i}
-              onClick={() => selectMarket(market.id)}
+              onClick={() => handleMarketClick(market)}
             />
           ))}
         </div>
@@ -160,6 +179,15 @@ export default function MarketsPage() {
       {/* Betting Panel */}
       {showBettingPanel && selectedMarket && (
         <BettingPanel market={selectedMarket} onPlaceBet={handlePlaceBet} />
+      )}
+
+      {/* Resolve Panel */}
+      {resolveMarketData && (
+        <ResolvePanel
+          market={resolveMarketData}
+          onResolve={handleResolve}
+          onClose={() => setResolveMarketData(null)}
+        />
       )}
     </main>
   );

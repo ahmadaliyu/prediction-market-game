@@ -8,7 +8,7 @@ import Navbar from '@/components/ui/Navbar';
 import MarketCard from '@/components/ui/MarketCard';
 import AIAgentCard from '@/components/ui/AIAgentCard';
 import BettingPanel from '@/components/ui/BettingPanel';
-import { useMarketStore, useAIAgentStore, useAppStore, useLeaderboardStore } from '@/store';
+import { useMarketStore, useAIAgentStore, useAppStore } from '@/store';
 import { useWalletContext } from '@/contexts/WalletContext';
 import { MarketDisplay } from '@/lib/types';
 
@@ -29,7 +29,6 @@ export default function HomePage() {
   const markets = useMarketStore((s) => s.filteredMarkets);
   const allMarkets = useMarketStore((s) => s.markets);
   const agents = useAIAgentStore((s) => s.agents);
-  const players = useLeaderboardStore((s) => s.players);
   const selectedMarketId = useAppStore((s) => s.selectedMarketId);
   const showBettingPanel = useAppStore((s) => s.showBettingPanel);
   const selectMarket = useAppStore((s) => s.selectMarket);
@@ -40,8 +39,9 @@ export default function HomePage() {
   }, [allMarkets]);
 
   const playerCount = useMemo(() => {
-    return players.filter((p) => !p.isAI).length;
-  }, [players]);
+    // Estimate unique player count from total bettors across markets
+    return allMarkets.reduce((sum, m) => sum + (m.bettorCount || 0), 0);
+  }, [allMarkets]);
 
   const selectedMarket = markets.find((m: MarketDisplay) => m.id === selectedMarketId);
   const { contracts, isConnected } = useWalletContext();

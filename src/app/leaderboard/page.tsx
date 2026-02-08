@@ -1,12 +1,52 @@
 'use client';
 
+import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Trophy, Medal, TrendingUp, Flame, Bot } from 'lucide-react';
+import { Trophy, Flame, Bot, Loader2, RefreshCw } from 'lucide-react';
 import Navbar from '@/components/ui/Navbar';
-import { useLeaderboardStore } from '@/store';
+import { useWalletContext } from '@/contexts/WalletContext';
+import { shortenAddress } from '@/lib/utils';
+
+interface LeaderboardEntry {
+  address: string;
+  totalBet: string;
+  totalWon: string;
+  wins: number;
+  losses: number;
+  bets: number;
+  winRate: number;
+  pnl: string;
+}
 
 export default function LeaderboardPage() {
-  const players = useLeaderboardStore((s) => s.players);
+  const { contracts } = useWalletContext();
+  const [players, setPlayers] = useState<LeaderboardEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const loadLeaderboard = useCallback(async () => {
+    if (!contracts.contractsAvailable) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    try {
+      const data = await contracts.getLeaderboard();
+      const entries: LeaderboardEntry[] = data.map((p) => ({
+        ...p,
+        winRate: p.bets > 0 ? (p.wins / p.bets) * 100 : 0,
+        pnl: (parseFloat(p.totalWon) - parseFloat(p.totalBet)).toFixed(4),
+      }));
+      setPlayers(entries);
+    } catch (err) {
+      console.error('Failed to load leaderboard:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [contracts]);
+
+  useEffect(() => {
+    loadLeaderboard();
+  }, [loadLeaderboard]);
 
   return (
     <main className="min-h-screen bg-arena-surface">
@@ -23,10 +63,21 @@ export default function LeaderboardPage() {
             <Trophy className="w-8 h-8 text-arena-gold" />
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">Leaderboard</h1>
-          <p className="text-gray-400">Top predictors and AI agents ranked by performance</p>
+          <p className="text-gray-400">Top predictors ranked by performance</p>
+          <button
+            onClick={loadLeaderboard}
+            disabled={loading}
+            className="mt-3 p-2 rounded-lg border border-arena-border hover:border-arena-primary/50 transition-colors inline-flex"
+          >
+            <RefreshCw className={`w-4 h-4 text-gray-400 ${loading ? 'animate-spin' : ''}`} />
+          </button>
         </motion.div>
 
-        {players.length === 0 ? (
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="w-8 h-8 text-arena-primary animate-spin" />
+          </div>
+        ) : players.length === 0 ? (
           <div className="text-center py-20">
             <Trophy className="w-12 h-12 text-gray-600 mx-auto mb-4" />
             <h2 className="text-xl font-bold text-white mb-2">No players yet</h2>
@@ -37,10 +88,12 @@ export default function LeaderboardPage() {
         ) : (
         <>
         {/* Top 3 podium */}
-        <div className="grid grid-cols-3 gap-4 mb-8">
+        {players.length >= 1 && (
+        <div className={`grid gap-4 mb-8 ${players.length >= 3 ? 'grid-cols-3' : players.length === 2 ? 'grid-cols-2' : 'grid-cols-1 max-w-sm mx-auto'}`}>
           {players.slice(0, 3).map((player, i) => {
             const medals = ['🥇', '🥈', '🥉'];
             const glows = ['shadow-[0_0_30px_rgba(255,215,0,0.3)]', 'shadow-[0_0_20px_rgba(192,192,192,0.3)]', 'shadow-[0_0_20px_rgba(205,127,50,0.3)]'];
+            const pnlNum = parseFloat(player.pnl);
             return (
               <motion.div
                 key={player.address}
@@ -51,27 +104,20 @@ export default function LeaderboardPage() {
                            ${i === 0 ? 'row-start-1 ' + glows[0] : glows[i]} relative`}
               >
                 <span className="text-3xl mb-2 block">{medals[i]}</span>
-                <div className="flex items-center justify-center gap-1 mb-1">
-                  {player.isAI && <Bot className="w-3 h-3 text-arena-primary" />}
-                  <h3 className="font-bold text-white text-sm">{player.name}</h3>
-                </div>
-                <p className="text-xs text-gray-500 font-mono mb-3">{player.address}</p>
-
-                <div className="space-y-2">
+                <h3 className="font-bold text-white text-sm">{shortenAddress(player.address, 6)}</h3>
+                <div className="space-y-2 mt-3">
                   <div className="flex justify-between text-xs">
                     <span className="text-gray-400">Win Rate</span>
-                    <span className="text-arena-green font-bold">{player.winRate}%</span>
+                    <span className="text-arena-green font-bold">{player.winRate.toFixed(1)}%</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-400">W/L</span>
+                    <span className="text-white font-bold">{player.wins}/{player.losses}</span>
                   </div>
                   <div className="flex justify-between text-xs">
                     <span className="text-gray-400">P&L</span>
-                    <span className={`font-bold ${player.pnl.startsWith('+') ? 'text-arena-green' : 'text-red-400'}`}>
-                      {player.pnl} AVAX
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-gray-400">Streak</span>
-                    <span className="text-arena-gold font-bold flex items-center gap-1">
-                      <Flame className="w-3 h-3" /> {player.currentStreak}
+                    <span className={`font-bold ${pnlNum >= 0 ? 'text-arena-green' : 'text-red-400'}`}>
+                      {pnlNum >= 0 ? '+' : ''}{player.pnl} AVAX
                     </span>
                   </div>
                 </div>
@@ -79,6 +125,7 @@ export default function LeaderboardPage() {
             );
           })}
         </div>
+        )}
 
         {/* Full Leaderboard Table */}
         <div className="bg-arena-card border border-arena-border rounded-2xl overflow-hidden">
@@ -90,13 +137,15 @@ export default function LeaderboardPage() {
                   <th className="text-left text-xs text-gray-500 font-medium px-5 py-3">Player</th>
                   <th className="text-right text-xs text-gray-500 font-medium px-5 py-3">Win Rate</th>
                   <th className="text-right text-xs text-gray-500 font-medium px-5 py-3">W/L</th>
-                  <th className="text-right text-xs text-gray-500 font-medium px-5 py-3">Volume</th>
+                  <th className="text-right text-xs text-gray-500 font-medium px-5 py-3">Total Bet</th>
+                  <th className="text-right text-xs text-gray-500 font-medium px-5 py-3">Total Won</th>
                   <th className="text-right text-xs text-gray-500 font-medium px-5 py-3">P&L</th>
-                  <th className="text-right text-xs text-gray-500 font-medium px-5 py-3">Streak</th>
                 </tr>
               </thead>
               <tbody>
-                {players.map((player, i) => (
+                {players.map((player, i) => {
+                  const pnlNum = parseFloat(player.pnl);
+                  return (
                   <motion.tr
                     key={player.address}
                     initial={{ opacity: 0, x: -20 }}
@@ -106,45 +155,34 @@ export default function LeaderboardPage() {
                   >
                     <td className="px-5 py-3.5">
                       <span className={`text-sm font-bold ${i < 3 ? 'text-arena-gold' : 'text-gray-400'}`}>
-                        #{player.rank}
+                        #{i + 1}
                       </span>
                     </td>
                     <td className="px-5 py-3.5">
-                      <div className="flex items-center gap-2">
-                        {player.isAI && (
-                          <span className="px-1.5 py-0.5 rounded-md text-[10px] bg-arena-primary/20 text-arena-primary font-medium">
-                            AI
-                          </span>
-                        )}
-                        <span className="text-sm text-white font-medium">{player.name}</span>
-                        <span className="text-xs text-gray-500 font-mono">{player.address}</span>
-                      </div>
+                      <span className="text-sm text-white font-medium font-mono">{shortenAddress(player.address, 6)}</span>
                     </td>
                     <td className="px-5 py-3.5 text-right">
-                      <span className="text-sm text-arena-green font-medium">{player.winRate}%</span>
+                      <span className="text-sm text-arena-green font-medium">{player.winRate.toFixed(1)}%</span>
                     </td>
                     <td className="px-5 py-3.5 text-right">
                       <span className="text-sm text-white">
-                        {player.totalWins}/{player.totalBets}
+                        {player.wins}/{player.losses}
                       </span>
                     </td>
                     <td className="px-5 py-3.5 text-right">
-                      <span className="text-sm text-gray-300">{player.totalAmountBet} AVAX</span>
+                      <span className="text-sm text-gray-300">{player.totalBet} AVAX</span>
                     </td>
                     <td className="px-5 py-3.5 text-right">
-                      <span className={`text-sm font-medium ${player.pnl.startsWith('+') ? 'text-arena-green' : 'text-red-400'}`}>
-                        {player.pnl}
+                      <span className="text-sm text-gray-300">{player.totalWon} AVAX</span>
+                    </td>
+                    <td className="px-5 py-3.5 text-right">
+                      <span className={`text-sm font-medium ${pnlNum >= 0 ? 'text-arena-green' : 'text-red-400'}`}>
+                        {pnlNum >= 0 ? '+' : ''}{player.pnl}
                       </span>
-                    </td>
-                    <td className="px-5 py-3.5 text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        {player.currentStreak > 0 && <Flame className="w-3 h-3 text-orange-400" />}
-                        <span className="text-sm text-white">{player.currentStreak}</span>
-                        <span className="text-[10px] text-gray-500">(best: {player.bestStreak})</span>
-                      </div>
                     </td>
                   </motion.tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>
