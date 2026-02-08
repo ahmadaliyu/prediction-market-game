@@ -1,0 +1,52 @@
+{
+  "name": "prediction-market-game",
+  "version": "1.0.0",
+  "private": true,
+  "description": "3D Prediction Market Game on Avalanche — AI agents compete in a sci-fi arena",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "compile": "hardhat compile",
+    "test:contracts": "hardhat test",
+    "deploy:fuji": "hardhat run scripts/deploy.ts --network fuji",
+    "deploy:local": "hardhat run scripts/deploy.ts --network localhost",
+    "node:local": "hardhat node"
+  },
+  "dependencies": {
+    "next": "14.2.21",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "@react-three/fiber": "^8.17.10",
+    "@react-three/drei": "^9.117.0",
+    "@react-three/postprocessing": "^2.16.4",
+    "three": "^0.170.0",
+    "ethers": "^6.13.4",
+    "zustand": "^5.0.2",
+    "framer-motion": "^11.15.0",
+    "lucide-react": "^0.468.0",
+    "tailwindcss": "^3.4.17",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "react-hot-toast": "^2.4.1",
+    "clsx": "^2.1.1",
+    "date-fns": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.0.2",
+    "@types/three": "^0.170.0",
+    "typescript": "^5.7.2",
+    "eslint": "^8.56.0",
+    "eslint-config-next": "14.2.21",
+    "hardhat": "^2.22.17",
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@nomicfoundation/hardhat-ethers": "^3.0.8",
+    "@typechain/hardhat": "^9.1.0",
+    "@typechain/ethers-v6": "^0.5.1",
+    "typechain": "^8.3.2",
+    "dotenv": "^16.4.7"
+  }
+}
