@@ -157,7 +157,7 @@ export default function AIAgentAvatar({ agent, position, onClick }: AIAgentAvata
           <group position={[0, 0.8, 0]}>
             <Sphere args={[0.12, 8, 8]}>
               <meshBasicMaterial
-                color={agent.currentBet.position === 'YES' ? '#00FF88' : '#FF4444'}
+                color={agent.currentBet.outcomeIndex === 0 ? '#00FF88' : '#FF4444'}
               />
             </Sphere>
             <Text
@@ -167,7 +167,7 @@ export default function AIAgentAvatar({ agent, position, onClick }: AIAgentAvata
               anchorX="center"
               anchorY="middle"
             >
-              {`${agent.currentBet.position} (${agent.currentBet.confidence}%)`}
+              {`#${agent.currentBet.outcomeIndex} (${agent.currentBet.confidence}%)`}
             </Text>
           </group>
         )}

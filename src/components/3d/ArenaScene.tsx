@@ -103,7 +103,7 @@ function ArenaContent() {
           key={market.id}
           position={marketPositions[i]}
           question={market.question}
-          yesPercent={market.yesPercent}
+          yesPercent={market.outcomes.length > 0 ? market.outcomes[0].percent : 50}
           totalPool={market.totalPool}
           category={market.category}
           color={getCategoryConfig(market.category).color}

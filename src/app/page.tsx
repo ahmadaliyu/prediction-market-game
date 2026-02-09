@@ -82,9 +82,9 @@ export default function HomePage() {
     accuracy: 0,
   }));
 
-  const handlePlaceBet = async (position: boolean, amount: string) => {
+  const handlePlaceBet = async (outcomeIndex: number, amount: string) => {
     if (selectedMarketId === null) throw new Error('No market selected');
-    await contracts.placeBet(selectedMarketId, position, amount);
+    await contracts.placeBet(selectedMarketId, outcomeIndex, amount, '');
     const updated = await contracts.getAllMarkets();
     useMarketStore.getState().setMarkets(updated);
   };
@@ -98,7 +98,7 @@ export default function HomePage() {
         <div className="absolute inset-0">
           <ArenaScene />
         </div>
-        <div className="absolute inset-0 bg-gradient-to-t from-arena-dark via-transparent to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-arena-dark/60 pointer-events-none" />
         <div className="absolute bottom-0 left-0 right-0 p-8 pointer-events-none">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -111,7 +111,7 @@ export default function HomePage() {
                 initial={{ opacity: 0, y: 40, filter: 'blur(10px)' }}
                 animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
                 transition={{ delay: 0.6, duration: 0.8 }}
-                className="bg-gradient-to-r from-arena-primary via-arena-accent to-arena-secondary bg-clip-text text-transparent bg-[length:200%_auto] animate-gradient inline-block"
+                className="text-arena-primary inline-block"
               >
                 Prediction Arena
               </motion.span>
@@ -156,8 +156,8 @@ export default function HomePage() {
 
       {/* Stats Bar */}
       <section className="border-y border-white/5 bg-arena-darker/50 backdrop-blur-sm relative overflow-hidden">
-        {/* Animated background gradient */}
-        <div className="absolute inset-0 bg-gradient-to-r from-arena-primary/5 via-transparent to-arena-secondary/5 animate-gradient bg-[length:200%_100%]" />
+        {/* Subtle background */}
+        <div className="absolute inset-0 bg-arena-primary/[0.02]" />
         <div className="max-w-7xl mx-auto px-6 py-8 grid grid-cols-2 md:grid-cols-4 gap-6 relative">
           {[
             { label: 'Total Volume', value: totalVolume.toFixed(2), suffix: ' AVAX', icon: BarChart3, color: 'text-arena-primary' },
@@ -191,8 +191,6 @@ export default function HomePage() {
 
       {/* AI Agents */}
       <section className="max-w-7xl mx-auto px-6 py-16 relative">
-        {/* Section background accent */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-arena-primary/[0.02] to-transparent pointer-events-none" />
         
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -252,14 +250,14 @@ export default function HomePage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="text-center py-20 border border-white/5 rounded-2xl bg-arena-darker/30 relative overflow-hidden"
+            className="text-center py-20 border border-arena-border rounded-2xl bg-arena-card relative overflow-hidden"
           >
             {/* Animated background */}
             <div className="absolute inset-0">
               <motion.div
                 animate={{ rotate: 360 }}
                 transition={{ repeat: Infinity, duration: 30, ease: 'linear' }}
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-conic from-arena-primary/10 via-transparent to-arena-secondary/10 rounded-full blur-3xl"
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-arena-primary/10 rounded-full blur-3xl"
               />
             </div>
             <motion.div
@@ -300,13 +298,11 @@ export default function HomePage() {
       </AnimatePresence>
 
       {/* Footer */}
-      <footer className="border-t border-white/5 py-8 text-center text-gray-600 text-sm relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-t from-arena-primary/[0.02] to-transparent pointer-events-none" />
+      <footer className="border-t border-white/5 py-8 text-center text-gray-600 text-sm">
         <motion.p
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          className="relative"
         >
           Prediction Arena &copy; {new Date().getFullYear()} &mdash; Built on Avalanche
         </motion.p>

@@ -156,3 +156,41 @@ export const useLeaderboardStore = create<LeaderboardStore>((set) => ({
   players: [],
   setPlayers: (players) => set({ players }),
 }));
+
+// ─── Theme Store ─────────────────────────────────────────────
+
+interface ThemeStore {
+  isDarkMode: boolean;
+  toggleDarkMode: () => void;
+  setDarkMode: (isDark: boolean) => void;
+  initTheme: () => void;
+}
+
+export const useThemeStore = create<ThemeStore>((set, get) => ({
+  isDarkMode: true, // Default to dark mode
+  toggleDarkMode: () => {
+    const newValue = !get().isDarkMode;
+    set({ isDarkMode: newValue });
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('theme', newValue ? 'dark' : 'light');
+    }
+  },
+  setDarkMode: (isDark) => {
+    set({ isDarkMode: isDark });
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    }
+  },
+  initTheme: () => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('theme');
+      if (saved) {
+        set({ isDarkMode: saved === 'dark' });
+      } else {
+        // Check system preference
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        set({ isDarkMode: prefersDark });
+      }
+    }
+  },
+}));

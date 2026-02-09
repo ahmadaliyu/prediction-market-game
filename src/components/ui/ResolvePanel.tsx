@@ -1,191 +1,263 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, Gavel, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
-import { MarketDisplay } from '@/lib/types';
-import { getCategoryConfig } from '@/lib/utils';
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Check, AlertCircle } from "lucide-react";
+import type { MarketDisplay } from "@/lib/types";
 
 interface ResolvePanelProps {
   market: MarketDisplay;
-  onResolve: (outcome: boolean) => Promise<void>;
-  onClose: () => void;
+  onResolve: (winningOutcome: number) => Promise<void>;
+  isOwner: boolean;
 }
 
-export default function ResolvePanel({ market, onResolve, onClose }: ResolvePanelProps) {
-  const [outcome, setOutcome] = useState<boolean | null>(null);
+export default function ResolvePanel({
+  market,
+  onResolve,
+  isOwner,
+}: ResolvePanelProps) {
+  const [selectedOutcome, setSelectedOutcome] = useState<number | null>(null);
   const [isResolving, setIsResolving] = useState(false);
-  const [error, setError] = useState('');
-  const [resolved, setResolved] = useState(false);
-  const category = getCategoryConfig(market.category);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Check if user can resolve this market
+  const canResolve =
+    market.resolutionType === 0
+      ? isOwner // Manual resolution - only creator
+      : false; // AI Oracle - handled differently (not implemented yet)
 
   const handleResolve = async () => {
-    if (outcome === null) {
-      setError('Select the outcome: YES or NO');
+    if (selectedOutcome === null) {
+      setError("Please select a winning outcome");
       return;
     }
 
+    setError(null);
     setIsResolving(true);
-    setError('');
 
     try {
-      await onResolve(outcome);
-      setResolved(true);
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Failed to resolve market';
-      if (msg.includes('user rejected')) {
-        setError('Transaction was rejected');
-      } else if (msg.includes('Market not ended yet')) {
-        setError('Market has not ended yet');
-      } else if (msg.includes('Not authorized')) {
-        setError('Only the market creator or owner can resolve');
-      } else {
-        setError(msg);
-      }
+      await onResolve(selectedOutcome);
+      setShowSuccess(true);
+      setTimeout(() => {
+        setShowSuccess(false);
+      }, 2000);
+    } catch (err: any) {
+      console.error("Resolution error:", err);
+      setError(err.message || "Failed to resolve market");
     } finally {
       setIsResolving(false);
     }
   };
 
-  if (resolved) {
+  if (market.resolved) {
     return (
-      <AnimatePresence>
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-          onClick={onClose}
-        >
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="bg-arena-surface border border-arena-border rounded-2xl p-8 max-w-md w-full text-center"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <CheckCircle className="w-16 h-16 text-arena-green mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-white mb-2">Market Resolved!</h2>
-            <p className="text-gray-400 mb-2">
-              Outcome: <span className={`font-bold ${outcome ? 'text-arena-green' : 'text-red-400'}`}>{outcome ? 'YES' : 'NO'}</span>
+      <div className="bg-green-500/10 rounded-xl p-6 border border-green-500/30">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
+            <Check className="w-5 h-5 text-green-400" />
+          </div>
+          <div>
+            <h3 className="text-lg font-bold text-white">Market Resolved</h3>
+            <p className="text-sm text-gray-400">
+              Winning Outcome:{" "}
+              {market.outcomes[market.winningOutcome]?.label || "Unknown"}
             </p>
-            <p className="text-gray-500 text-sm mb-6">Winners can now claim their payouts.</p>
-            <button
-              onClick={onClose}
-              className="px-6 py-3 bg-arena-primary text-black font-bold rounded-xl hover:shadow-[0_0_20px_rgba(0,240,255,0.3)] transition-all"
-            >
-              Done
-            </button>
-          </motion.div>
-        </motion.div>
-      </AnimatePresence>
+          </div>
+        </div>
+        <div className="text-sm text-gray-300">
+          Winners can claim their payouts from their portfolio.
+        </div>
+      </div>
+    );
+  }
+
+  if (!canResolve) {
+    return (
+      <div className="bg-gray-500/10 rounded-xl p-6 border border-gray-500/30">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-10 h-10 rounded-full bg-gray-500/20 flex items-center justify-center">
+            <AlertCircle className="w-5 h-5 text-gray-400" />
+          </div>
+          <h3 className="text-lg font-bold text-white">Resolution Pending</h3>
+        </div>
+        <p className="text-sm text-gray-300">
+          {market.resolutionType === 0
+            ? "Only the market creator can resolve this market."
+            : "This market uses AI Oracle resolution (coming soon)."}
+        </p>
+      </div>
     );
   }
 
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-        onClick={onClose}
-      >
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          className="bg-arena-surface border border-arena-border rounded-2xl p-6 max-w-lg w-full"
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* Header */}
-          <div className="flex items-center justify-between mb-5">
-            <div className="flex items-center gap-2">
-              <Gavel className="w-5 h-5 text-arena-gold" />
-              <h2 className="text-lg font-bold text-white">Resolve Market</h2>
-            </div>
-            <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/10 transition-colors">
-              <X className="w-5 h-5 text-gray-400" />
-            </button>
-          </div>
-
-          {/* Market Info */}
-          <div className="bg-arena-card rounded-xl p-4 border border-arena-border mb-5">
-            <span
-              className="inline-block px-2 py-0.5 rounded-md text-xs font-medium mb-2"
-              style={{ backgroundColor: `${category.color}20`, color: category.color }}
-            >
-              {category.emoji} {category.label}
-            </span>
-            <p className="text-white font-medium text-sm leading-relaxed">{market.question}</p>
-            <div className="mt-3 flex items-center justify-between text-xs text-gray-400">
-              <span>Pool: {market.totalPool} AVAX</span>
-              <span>{market.bettorCount} {market.bettorCount === 1 ? 'bettor' : 'bettors'}</span>
-            </div>
-          </div>
-
-          {/* Outcome Selection */}
-          <div className="mb-5">
-            <label className="text-sm text-gray-400 mb-3 block">What was the actual outcome?</label>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                onClick={() => { setOutcome(true); setError(''); }}
-                className={`p-4 rounded-xl border-2 transition-all duration-200 text-center
-                  ${outcome === true
-                    ? 'border-arena-green bg-arena-green/10 shadow-[0_0_20px_rgba(0,255,136,0.2)]'
-                    : 'border-arena-border hover:border-arena-green/50 bg-arena-card'
-                  }`}
-              >
-                <span className="text-2xl mb-1 block">✅</span>
-                <span className={`font-bold text-lg ${outcome === true ? 'text-arena-green' : 'text-gray-300'}`}>YES</span>
-                <span className="text-xs text-gray-400 block mt-1">It happened</span>
-              </button>
-
-              <button
-                onClick={() => { setOutcome(false); setError(''); }}
-                className={`p-4 rounded-xl border-2 transition-all duration-200 text-center
-                  ${outcome === false
-                    ? 'border-red-500 bg-red-500/10 shadow-[0_0_20px_rgba(255,68,68,0.2)]'
-                    : 'border-arena-border hover:border-red-500/50 bg-arena-card'
-                  }`}
-              >
-                <span className="text-2xl mb-1 block">❌</span>
-                <span className={`font-bold text-lg ${outcome === false ? 'text-red-400' : 'text-gray-300'}`}>NO</span>
-                <span className="text-xs text-gray-400 block mt-1">It didn&apos;t happen</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Error */}
-          {error && (
-            <div className="flex items-center gap-2 px-3 py-2 bg-red-500/10 border border-red-500/30 rounded-lg mb-4">
-              <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
-              <span className="text-xs text-red-400">{error}</span>
-            </div>
-          )}
-
-          {/* Submit */}
-          <button
-            onClick={handleResolve}
-            disabled={isResolving || outcome === null}
-            className="w-full py-3.5 rounded-xl font-bold text-sm transition-all duration-300
-                       disabled:opacity-40 disabled:cursor-not-allowed
-                       bg-gradient-to-r from-arena-gold to-yellow-500 text-black
-                       hover:shadow-[0_0_30px_rgba(255,215,0,0.4)]
-                       active:scale-[0.98]"
+    <div className="bg-purple-500/10 rounded-xl p-6 border border-purple-500/30">
+      <AnimatePresence>
+        {showSuccess && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="absolute inset-0 bg-green-500/90 rounded-xl flex items-center justify-center z-10"
           >
-            {isResolving ? (
-              <span className="flex items-center justify-center gap-2">
-                <Loader2 className="w-4 h-4 animate-spin" /> Resolving...
-              </span>
-            ) : (
-              <span className="flex items-center justify-center gap-2">
-                <Gavel className="w-4 h-4" /> Resolve Market
-              </span>
-            )}
-          </button>
+            <div className="text-center">
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.2, type: "spring" }}
+                className="w-16 h-16 mx-auto mb-4 rounded-full bg-white/20 flex items-center justify-center"
+              >
+                <Check className="w-8 h-8 text-white" />
+              </motion.div>
+              <h3 className="text-xl font-bold text-white">Market Resolved!</h3>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-          <p className="text-[10px] text-gray-600 text-center mt-3">
-            This action is permanent. Once resolved, the outcome cannot be changed and winners can claim payouts.
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
+          <Check className="w-5 h-5 text-purple-400" />
+        </div>
+        <div>
+          <h3 className="text-lg font-bold text-white">Resolve Market</h3>
+          <p className="text-sm text-gray-400">
+            Select the winning outcome to finalize this market
           </p>
+        </div>
+      </div>
+
+      {/* Outcome Selection */}
+      <div className="space-y-3 mb-6">
+        <label className="block text-sm font-medium text-gray-300 mb-2">
+          Select Winning Outcome
+        </label>
+        <div className="grid gap-2">
+          {market.outcomes.map((outcome) => (
+            <motion.button
+              key={outcome.index}
+              onClick={() => setSelectedOutcome(outcome.index)}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className={`
+                relative overflow-hidden rounded-lg p-4 border-2 transition-all
+                ${
+                  selectedOutcome === outcome.index
+                    ? "border-purple-500 bg-purple-500/20"
+                    : "border-gray-600 bg-gray-800/50 hover:border-gray-500"
+                }
+              `}
+            >
+              <div className="flex items-center justify-between relative z-10">
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`
+                    w-5 h-5 rounded-full border-2 flex items-center justify-center
+                    ${
+                      selectedOutcome === outcome.index
+                        ? "border-purple-500 bg-purple-500"
+                        : "border-gray-500"
+                    }
+                  `}
+                  >
+                    {selectedOutcome === outcome.index && (
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="w-2 h-2 rounded-full bg-white"
+                      />
+                    )}
+                  </div>
+                  <span className="font-medium text-white">
+                    {outcome.label}
+                  </span>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm font-bold text-white">
+                    {outcome.pool}
+                  </div>
+                  <div className="text-xs text-gray-400">
+                    {outcome.percent}%
+                  </div>
+                </div>
+              </div>
+
+              {/* Background bar */}
+              <div className="absolute inset-0 bg-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+            </motion.button>
+          ))}
+        </div>
+      </div>
+
+      {/* Error Message */}
+      <AnimatePresence>
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg"
+          >
+            <div className="flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
+              <p className="text-sm text-red-400">{error}</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Info Box */}
+      <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 mb-6">
+        <div className="flex gap-3">
+          <AlertCircle className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+          <div className="text-sm text-gray-300">
+            <p className="font-medium text-white mb-1">Important</p>
+            <ul className="list-disc list-inside space-y-1 text-gray-400">
+              <li>This action is final and cannot be undone</li>
+              <li>Winners will be able to claim their payouts</li>
+              <li>You will receive 1.2% of the total trading volume</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      {/* Resolve Button */}
+      <motion.button
+        onClick={handleResolve}
+        disabled={isResolving || selectedOutcome === null}
+        whileHover={{ scale: selectedOutcome !== null ? 1.02 : 1 }}
+        whileTap={{ scale: selectedOutcome !== null ? 0.98 : 1 }}
+        className={`
+          w-full py-4 rounded-xl font-bold text-lg transition-all
+          ${
+            selectedOutcome !== null && !isResolving
+              ? "bg-purple-500 text-white hover:shadow-lg hover:shadow-purple-500/30"
+              : "bg-gray-700 text-gray-400 cursor-not-allowed"
+          }
+        `}
+      >
+        {isResolving ? (
+          <div className="flex items-center justify-center gap-2">
+            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            <span>Resolving...</span>
+          </div>
+        ) : (
+          "Resolve Market"
+        )}
+      </motion.button>
+
+      {selectedOutcome !== null && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mt-3 text-center text-sm text-gray-400"
+        >
+          Selected:{" "}
+          <span className="text-white font-medium">
+            {market.outcomes[selectedOutcome]?.label}
+          </span>
         </motion.div>
-      </motion.div>
-    </AnimatePresence>
+      )}
+    </div>
   );
 }

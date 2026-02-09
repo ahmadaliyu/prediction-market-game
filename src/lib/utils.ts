@@ -81,27 +81,29 @@ export function getCategoryConfig(categoryId: string) {
 }
 
 /**
- * Calculate potential payout
+ * Calculate potential payout for multi-outcome market
  */
 export function calculatePayout(
   betAmount: string,
-  position: boolean,
+  outcomeIndex: number,
   market: MarketDisplay
 ): string {
   const amount = parseFloat(betAmount);
   if (isNaN(amount) || amount <= 0) return '0';
+  if (outcomeIndex < 0 || outcomeIndex >= market.outcomes.length) return '0';
 
-  const totalPool =
-    parseFloat(market.totalYesAmount) +
-    parseFloat(market.totalNoAmount) +
-    amount;
-  const sidePool = position
-    ? parseFloat(market.totalYesAmount) + amount
-    : parseFloat(market.totalNoAmount) + amount;
+  // Parse outcome pools
+  const outcomePools = market.outcomes.map(o => parseFloat(o.pool));
+  const currentOutcomePool = outcomePools[outcomeIndex];
+  const totalPool = outcomePools.reduce((sum, pool) => sum + pool, 0) + amount;
+  const newOutcomePool = currentOutcomePool + amount;
 
-  const fee = totalPool * 0.02; // 2% fee
+  // Apply 2% total fee (1.2% creator + 0.8% platform)
+  const fee = totalPool * 0.02;
   const distributable = totalPool - fee;
-  const payout = (amount / sidePool) * distributable;
+
+  // Payout = (user's share of winning pool) * distributable pool
+  const payout = (amount / newOutcomePool) * distributable;
 
   return payout.toFixed(4);
 }

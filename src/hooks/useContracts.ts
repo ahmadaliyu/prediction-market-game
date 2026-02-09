@@ -4,7 +4,7 @@ import { useCallback } from 'react';
 import { ethers } from 'ethers';
 import { PredictionMarketABI, MarketFactoryABI } from '@/lib/abis';
 import { CONTRACTS, ACTIVE_CHAIN } from '@/lib/constants';
-import { Market, MarketDisplay, BetDisplay } from '@/lib/types';
+import { MarketRaw, MarketDisplay, BetDisplay, OutcomeDisplay } from '@/lib/types';
 import { formatAVAX, formatTimeRemaining } from '@/lib/utils';
 
 function getReadOnlyProvider() {
@@ -46,20 +46,43 @@ export function useContracts(signer: ethers.JsonRpcSigner | null) {
     );
   }, [signer]);
 
+  // ─── Create Market ───────────────────────────────────────────
+
   const createMarket = useCallback(
-    async (question: string, imageURI: string, category: string, endTime: number) => {
+    async (
+      question: string,
+      rules: string,
+      imageURI: string,
+      category: string,
+      outcomes: string[],
+      startTime: number,
+      endTime: number,
+      isPrivate: boolean,
+      accessCode: string,
+      resolutionType: number,
+      initialLiquidity: string
+    ) => {
       const contract = getWriteContract();
-      const tx = await contract.createMarket(question, imageURI, category, endTime);
+      const value = initialLiquidity && parseFloat(initialLiquidity) > 0
+        ? ethers.parseEther(initialLiquidity)
+        : BigInt(0);
+      const tx = await contract.createMarket(
+        question, rules, imageURI, category, outcomes,
+        startTime, endTime, isPrivate, accessCode, resolutionType,
+        { value }
+      );
       const receipt = await tx.wait();
       return receipt;
     },
     [getWriteContract]
   );
 
+  // ─── Place Bet ───────────────────────────────────────────────
+
   const placeBet = useCallback(
-    async (marketId: number, position: boolean, amount: string) => {
+    async (marketId: number, outcomeIndex: number, amount: string, accessCode: string = '') => {
       const contract = getWriteContract();
-      const tx = await contract.placeBet(marketId, position, {
+      const tx = await contract.placeBet(marketId, outcomeIndex, accessCode, {
         value: ethers.parseEther(amount),
       });
       const receipt = await tx.wait();
@@ -67,6 +90,8 @@ export function useContracts(signer: ethers.JsonRpcSigner | null) {
     },
     [getWriteContract]
   );
+
+  // ─── Claim Winnings ──────────────────────────────────────────
 
   const claimWinnings = useCallback(
     async (marketId: number) => {
@@ -78,72 +103,126 @@ export function useContracts(signer: ethers.JsonRpcSigner | null) {
     [getWriteContract]
   );
 
+  // ─── Resolve Market ──────────────────────────────────────────
+
   const resolveMarket = useCallback(
-    async (marketId: number, outcome: boolean) => {
+    async (marketId: number, winningOutcome: number) => {
       const contract = getWriteContract();
-      const tx = await contract.resolveMarket(marketId, outcome);
+      const tx = await contract.resolveMarket(marketId, winningOutcome);
       const receipt = await tx.wait();
       return receipt;
     },
     [getWriteContract]
   );
 
-  const parseMarket = useCallback((raw: Market, bettorCount: number = 0): MarketDisplay => {
+  // ─── Parse Market ────────────────────────────────────────────
+
+  const parseMarket = useCallback((raw: MarketRaw, bettorCount: number = 0): MarketDisplay => {
     const now = Math.floor(Date.now() / 1000);
-    // Debug: log raw contract values
-    console.log('[parseMarket] raw.endTime:', raw.endTime, 'type:', typeof raw.endTime, 'Number():', Number(raw.endTime));
-    console.log('[parseMarket] now:', now, 'diff:', Number(raw.endTime) - now);
-    console.log('[parseMarket] raw.totalYesAmount:', raw.totalYesAmount, 'type:', typeof raw.totalYesAmount);
-    console.log('[parseMarket] raw.totalNoAmount:', raw.totalNoAmount, 'type:', typeof raw.totalNoAmount);
-    const isExpired = now >= Number(raw.endTime);
-    const totalYes = typeof raw.totalYesAmount === 'bigint' ? raw.totalYesAmount : BigInt(String(raw.totalYesAmount));
-    const totalNo = typeof raw.totalNoAmount === 'bigint' ? raw.totalNoAmount : BigInt(String(raw.totalNoAmount));
-    const total = totalYes + totalNo;
-    console.log('[parseMarket] totalYes:', totalYes.toString(), 'totalNo:', totalNo.toString(), 'total:', total.toString());
-    console.log('[parseMarket] formatAVAX(total):', formatAVAX(total));
+    const endTime = Number(raw.endTime);
+    const startTime = Number(raw.startTime);
+    const isExpired = now >= endTime;
+    const isStarted = now >= startTime;
+    const totalPool = typeof raw.totalPool === 'bigint' ? raw.totalPool : BigInt(String(raw.totalPool));
+    const outcomeCount = Number(raw.outcomeCount);
+
+    // Build outcomes array
+    const outcomes: OutcomeDisplay[] = [];
+    for (let i = 0; i < outcomeCount; i++) {
+      const pool = typeof raw.outcomePools[i] === 'bigint'
+        ? raw.outcomePools[i]
+        : BigInt(String(raw.outcomePools[i]));
+      const percent = totalPool === BigInt(0)
+        ? Math.floor(100 / outcomeCount)
+        : Number((pool * BigInt(100)) / totalPool);
+      outcomes.push({
+        label: raw.outcomeLabels[i],
+        pool: formatAVAX(pool),
+        percent,
+        index: i,
+      });
+    }
+
+    // Fix rounding so percents sum to 100
+    const sumPercent = outcomes.reduce((s, o) => s + o.percent, 0);
+    if (sumPercent < 100 && outcomes.length > 0) {
+      outcomes[0].percent += 100 - sumPercent;
+    }
+
+    let status: 'upcoming' | 'active' | 'expired' | 'resolved';
+    if (raw.resolved) status = 'resolved';
+    else if (isExpired) status = 'expired';
+    else if (!isStarted) status = 'upcoming';
+    else status = 'active';
 
     return {
       id: Number(raw.id),
       question: raw.question,
+      rules: raw.rules,
       imageURI: raw.imageURI,
-      category: raw.category,
-      endTime: Number(raw.endTime),
-      totalYesAmount: formatAVAX(totalYes),
-      totalNoAmount: formatAVAX(totalNo),
-      totalPool: formatAVAX(total),
-      yesPercent: total === BigInt(0) ? 50 : Number((totalYes * BigInt(100)) / total),
-      noPercent: total === BigInt(0) ? 50 : 100 - Number((totalYes * BigInt(100)) / total),
+      category: (raw.category || 'other') as MarketDisplay['category'],
+      outcomes,
+      outcomeCount,
+      endTime,
+      startTime,
+      totalPool: formatAVAX(totalPool),
       resolved: raw.resolved,
-      outcome: raw.outcome,
+      winningOutcome: Number(raw.winningOutcome),
       creator: raw.creator,
       createdAt: Number(raw.createdAt),
-      timeRemaining: formatTimeRemaining(Number(raw.endTime)),
+      isPrivate: raw.isPrivate,
+      resolutionType: Number(raw.resolutionType),
+      timeRemaining: formatTimeRemaining(endTime),
       isExpired,
-      status: raw.resolved ? 'resolved' : isExpired ? 'expired' : 'active',
+      isStarted,
+      status,
       bettorCount,
     };
   }, []);
+
+  // ─── Get Single Market ──────────────────────────────────────
 
   const getMarket = useCallback(
     async (marketId: number): Promise<MarketDisplay | null> => {
       const contract = getReadContract();
       if (!contract) return null;
       try {
-        const raw: Market = await contract.getMarket(marketId);
+        const raw = await contract.getMarket(marketId);
+        // getMarket returns a tuple, map to MarketRaw
+        const marketRaw: MarketRaw = {
+          id: raw[0],
+          question: raw[1],
+          rules: raw[2],
+          imageURI: raw[3],
+          category: raw[4],
+          outcomeLabels: raw[5],
+          outcomePools: raw[6],
+          outcomeCount: raw[7],
+          endTime: raw[8],
+          startTime: raw[9],
+          totalPool: raw[10],
+          resolved: raw[11],
+          winningOutcome: raw[12],
+          creator: raw[13],
+          createdAt: raw[14],
+          isPrivate: raw[15],
+          resolutionType: Number(raw[16]),
+        };
         let bettorCount = 0;
         try {
           const bettors: string[] = await contract.getMarketBettors(marketId);
           bettorCount = bettors.length;
-        } catch {
-          // ignore if getMarketBettors fails
-        }
-        return parseMarket(raw, bettorCount);
-      } catch {
+        } catch { /* ignore */ }
+        return parseMarket(marketRaw, bettorCount);
+      } catch (err) {
+        console.error('[getMarket] error:', err);
         return null;
       }
     },
     [getReadContract, parseMarket]
   );
+
+  // ─── Get All Markets ────────────────────────────────────────
 
   const getAllMarkets = useCallback(async (): Promise<MarketDisplay[]> => {
     const contract = getReadContract();
@@ -161,6 +240,8 @@ export function useContracts(signer: ethers.JsonRpcSigner | null) {
     }
   }, [getReadContract, getMarket]);
 
+  // ─── Get User Bets ──────────────────────────────────────────
+
   const getUserBets = useCallback(
     async (userAddress: string): Promise<BetDisplay[]> => {
       const contract = getReadContract();
@@ -173,10 +254,12 @@ export function useContracts(signer: ethers.JsonRpcSigner | null) {
           const bet = await contract.getBet(id, userAddress);
           const market = await getMarket(id);
           if (bet.amount > 0) {
+            const outcomeIdx = Number(bet.outcomeIndex);
             results.push({
               marketId: id,
               amount: formatAVAX(bet.amount),
-              position: bet.position ? 'YES' : 'NO',
+              outcomeLabel: market?.outcomes[outcomeIdx]?.label || `Outcome ${outcomeIdx}`,
+              outcomeIndex: outcomeIdx,
               claimed: bet.claimed,
               market: market || undefined,
             });
@@ -189,6 +272,8 @@ export function useContracts(signer: ethers.JsonRpcSigner | null) {
     },
     [getReadContract, getMarket]
   );
+
+  // ─── Leaderboard ─────────────────────────────────────────────
 
   const getPlayerStats = useCallback(
     async (address: string) => {
@@ -225,7 +310,12 @@ export function useContracts(signer: ethers.JsonRpcSigner | null) {
 
       for (let i = 0; i < Number(count); i++) {
         try {
-          const market = await contract.getMarket(i);
+          const raw = await contract.getMarket(i);
+          const resolved = raw[11];
+          const winningOutcome = Number(raw[12]);
+          const totalPool = raw[10];
+          const outcomePools: bigint[] = raw[6];
+
           const bettors: string[] = await contract.getMarketBettors(i);
 
           for (const bettor of bettors) {
@@ -233,26 +323,21 @@ export function useContracts(signer: ethers.JsonRpcSigner | null) {
             if (bet.amount === BigInt(0)) continue;
 
             const stats = playerMap.get(bettor) || {
-              totalBet: BigInt(0),
-              totalWon: BigInt(0),
-              wins: 0,
-              losses: 0,
-              bets: 0,
+              totalBet: BigInt(0), totalWon: BigInt(0),
+              wins: 0, losses: 0, bets: 0,
             };
 
             stats.totalBet += bet.amount;
             stats.bets += 1;
 
-            if (market.resolved) {
-              if (bet.position === market.outcome) {
+            if (resolved) {
+              if (Number(bet.outcomeIndex) === winningOutcome) {
                 stats.wins += 1;
-                // Calculate approximate payout
-                const totalPool = market.totalYesAmount + market.totalNoAmount;
-                const fee = (totalPool * BigInt(200)) / BigInt(10000);
-                const distributable = totalPool - fee;
-                const winningPool = market.outcome ? market.totalYesAmount : market.totalNoAmount;
-                if (winningPool > BigInt(0)) {
-                  stats.totalWon += (bet.amount * distributable) / winningPool;
+                const totalFees = (totalPool * BigInt(200)) / BigInt(10000);
+                const distributable = totalPool - totalFees;
+                const winPool = outcomePools[winningOutcome];
+                if (winPool > BigInt(0)) {
+                  stats.totalWon += (bet.amount * distributable) / winPool;
                 }
               } else {
                 stats.losses += 1;
@@ -261,13 +346,11 @@ export function useContracts(signer: ethers.JsonRpcSigner | null) {
 
             playerMap.set(bettor, stats);
           }
-        } catch {
-          continue;
-        }
+        } catch { continue; }
       }
 
-      const results = Array.from(playerMap.entries()).map(([address, stats]) => ({
-        address,
+      const results = Array.from(playerMap.entries()).map(([addr, stats]) => ({
+        address: addr,
         totalBet: formatAVAX(stats.totalBet),
         totalWon: formatAVAX(stats.totalWon),
         wins: stats.wins,
@@ -275,7 +358,6 @@ export function useContracts(signer: ethers.JsonRpcSigner | null) {
         bets: stats.bets,
       }));
 
-      // Sort by most wins, then by totalWon
       results.sort((a, b) => b.wins - a.wins || parseFloat(b.totalWon) - parseFloat(a.totalWon));
       return results;
     } catch {

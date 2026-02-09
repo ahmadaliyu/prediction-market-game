@@ -126,12 +126,12 @@ export default function AIAgentCard({ agent, index = 0 }: AIAgentCardProps) {
                 animate={{ scale: [1, 1.05, 1] }}
                 transition={{ repeat: Infinity, duration: 2 }}
                 className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
-                  agent.currentBet.position === 'YES'
+                  agent.currentBet.outcomeIndex === 0
                     ? 'bg-arena-green/20 text-arena-green'
                     : 'bg-red-500/20 text-red-400'
                 }`}
               >
-                {agent.currentBet.position}
+                Outcome #{agent.currentBet.outcomeIndex}
               </motion.span>
               <span className="text-[10px] text-gray-400">{agent.currentBet.confidence}% confidence</span>
             </div>

@@ -1,26 +1,50 @@
-
-export interface Market {
-  id: number;
+export interface MarketRaw {
+  id: bigint;
   question: string;
+  rules: string;
   imageURI: string;
-  category: MarketCategory;
-  endTime: number;
-  totalYesAmount: bigint;
-  totalNoAmount: bigint;
+  category: string;
+  outcomeLabels: string[];
+  outcomePools: bigint[];
+  outcomeCount: bigint;
+  endTime: bigint;
+  startTime: bigint;
+  totalPool: bigint;
   resolved: boolean;
-  outcome: boolean;
+  winningOutcome: bigint;
   creator: string;
-  createdAt: number;
+  createdAt: bigint;
+  isPrivate: boolean;
+  resolutionType: number;
 }
 
-export interface MarketDisplay extends Omit<Market, 'totalYesAmount' | 'totalNoAmount'> {
-  totalYesAmount: string;
-  totalNoAmount: string;
+export interface OutcomeDisplay {
+  label: string;
+  pool: string;
+  percent: number;
+  index: number;
+}
+
+export interface MarketDisplay {
+  id: number;
+  question: string;
+  rules: string;
+  imageURI: string;
+  category: MarketCategory;
+  outcomes: OutcomeDisplay[];
+  outcomeCount: number;
+  endTime: number;
+  startTime: number;
   totalPool: string;
-  yesPercent: number;
-  noPercent: number;
+  resolved: boolean;
+  winningOutcome: number;
+  creator: string;
+  createdAt: number;
+  isPrivate: boolean;
+  resolutionType: number;
   timeRemaining: string;
   isExpired: boolean;
+  isStarted: boolean;
   status: MarketStatus;
   bettorCount: number;
 }
@@ -35,18 +59,19 @@ export type MarketCategory =
   | 'gaming'
   | 'other';
 
-export type MarketStatus = 'active' | 'expired' | 'resolved';
+export type MarketStatus = 'upcoming' | 'active' | 'expired' | 'resolved';
 
 export interface Bet {
   amount: bigint;
-  position: boolean; // true = YES, false = NO
+  outcomeIndex: number;
   claimed: boolean;
 }
 
 export interface BetDisplay {
   marketId: number;
   amount: string;
-  position: 'YES' | 'NO';
+  outcomeLabel: string;
+  outcomeIndex: number;
   claimed: boolean;
   market?: MarketDisplay;
   potentialPayout?: string;
@@ -96,12 +121,10 @@ export interface AIAgentDisplay extends AIAgent {
   description: string;
   currentBet?: {
     marketId: number;
-    position: 'YES' | 'NO';
+    outcomeIndex: number;
     confidence: number;
   };
 }
-
-//                    3D SCENE TYPES
 
 export interface MarketOrb {
   id: number;
@@ -143,13 +166,14 @@ export interface APIResponse<T = unknown> {
 
 export interface CreateMarketParams {
   question: string;
+  rules: string;
   imageURI?: string;
   category: MarketCategory;
+  outcomes: string[];
+  startTime: number;
   endTime: number;
-}
-
-export interface PlaceBetParams {
-  marketId: number;
-  position: boolean;
-  amount: string;
+  isPrivate: boolean;
+  accessCode: string;
+  resolutionType: number;
+  initialLiquidity: string;
 }

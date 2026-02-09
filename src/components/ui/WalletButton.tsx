@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Wallet, ChevronDown, ExternalLink, Copy, LogOut } from 'lucide-react';
+import { Wallet, ChevronDown, ExternalLink, Copy, LogOut, RefreshCw, Check } from 'lucide-react';
 import { useWalletContext } from '@/contexts/WalletContext';
 import { shortenAddress } from '@/lib/utils';
 import { ACTIVE_CHAIN } from '@/lib/constants';
@@ -12,6 +12,7 @@ export default function WalletButton() {
     useWalletContext();
   const [showDropdown, setShowDropdown] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const handleConnect = async () => {
     setIsConnecting(true);
@@ -24,10 +25,34 @@ export default function WalletButton() {
     }
   };
 
+  const handleSwitchWallet = async () => {
+    setShowDropdown(false);
+    // Request wallet to show account picker
+    if (window.ethereum) {
+      try {
+        await window.ethereum.request({
+          method: 'wallet_requestPermissions',
+          params: [{ eth_accounts: {} }],
+        });
+        // After permission granted, reconnect to get the new account
+        await connect();
+      } catch (err) {
+        console.error('Switch wallet error:', err);
+      }
+    }
+  };
+
   const copyAddress = () => {
     if (address) {
       navigator.clipboard.writeText(address);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     }
+  };
+
+  const handleDisconnect = () => {
+    disconnect();
+    setShowDropdown(false);
   };
 
   if (!isConnected) {
@@ -35,9 +60,9 @@ export default function WalletButton() {
       <button
         onClick={handleConnect}
         disabled={isConnecting}
-        className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-arena-primary/20 to-arena-secondary/20 
-                   border border-arena-primary/40 rounded-xl hover:border-arena-primary/80 
-                   transition-all duration-300 hover:shadow-[0_0_20px_rgba(0,240,255,0.3)]
+        className="flex items-center gap-2 px-4 py-2.5 bg-arena-primary/15
+                   border border-arena-primary/50 rounded-xl hover:border-arena-primary 
+                   transition-all duration-300 hover:shadow-[0_0_15px_rgba(0,212,232,0.25)]
                    disabled:opacity-50 disabled:cursor-not-allowed group"
       >
         <Wallet className="w-4 h-4 text-arena-primary group-hover:animate-pulse" />
@@ -99,8 +124,14 @@ export default function WalletButton() {
                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/5 
                            transition-colors text-left"
               >
-                <Copy className="w-4 h-4 text-gray-400" />
-                <span className="text-sm text-gray-300">Copy Address</span>
+                {copied ? (
+                  <Check className="w-4 h-4 text-arena-green" />
+                ) : (
+                  <Copy className="w-4 h-4 text-gray-400" />
+                )}
+                <span className="text-sm text-gray-300">
+                  {copied ? 'Copied!' : 'Copy Address'}
+                </span>
               </button>
 
               <a
@@ -115,10 +146,16 @@ export default function WalletButton() {
               </a>
 
               <button
-                onClick={() => {
-                  disconnect();
-                  setShowDropdown(false);
-                }}
+                onClick={handleSwitchWallet}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/5 
+                           transition-colors text-left"
+              >
+                <RefreshCw className="w-4 h-4 text-gray-400" />
+                <span className="text-sm text-gray-300">Switch Wallet</span>
+              </button>
+
+              <button
+                onClick={handleDisconnect}
                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-red-500/10 
                            transition-colors text-left"
               >

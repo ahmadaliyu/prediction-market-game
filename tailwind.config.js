@@ -15,16 +15,16 @@ module.exports = {
           accent: '#FF6B6B',
         },
         arena: {
-          primary: '#00F0FF',
-          secondary: '#FF00E5',
-          tertiary: '#7B61FF',
-          green: '#00FF88',
-          gold: '#FFD700',
-          dark: '#0a0a1a',
-          darker: '#060612',
-          surface: '#141428',
-          card: '#1E1E3A',
-          border: '#2A2A4A',
+          primary: '#3B82F6',      // Clean blue
+          secondary: '#8B5CF6',    // Purple
+          tertiary: '#6366F1',     // Indigo
+          green: '#22C55E',        // Success green
+          gold: '#F59E0B',         // Amber
+          dark: '#111113',         // Softer dark
+          darker: '#0A0A0C',       // Deep but not pure black
+          surface: '#161618',      // Main background - lighter
+          card: '#1E1E21',         // Card background - lighter zinc
+          border: '#2E2E33',       // Border - lighter
         },
       },
       fontFamily: {

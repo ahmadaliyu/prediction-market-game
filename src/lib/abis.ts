@@ -1,37 +1,50 @@
 export const PredictionMarketABI = [
-  // Market Management
+  // ─── createMarket ────────────────────────────────────────────
   {
     inputs: [
       { name: "_question", type: "string" },
+      { name: "_rules", type: "string" },
       { name: "_imageURI", type: "string" },
       { name: "_category", type: "string" },
+      { name: "_outcomes", type: "string[]" },
+      { name: "_startTime", type: "uint256" },
       { name: "_endTime", type: "uint256" },
+      { name: "_isPrivate", type: "bool" },
+      { name: "_accessCode", type: "string" },
+      { name: "_resolutionType", type: "uint8" },
     ],
     name: "createMarket",
     outputs: [{ name: "", type: "uint256" }],
-    stateMutability: "nonpayable",
+    stateMutability: "payable",
     type: "function",
   },
+
+  // ─── placeBet ────────────────────────────────────────────────
   {
     inputs: [
       { name: "_marketId", type: "uint256" },
-      { name: "_position", type: "bool" },
+      { name: "_outcomeIndex", type: "uint256" },
+      { name: "_accessCode", type: "string" },
     ],
     name: "placeBet",
     outputs: [],
     stateMutability: "payable",
     type: "function",
   },
+
+  // ─── resolveMarket ──────────────────────────────────────────
   {
     inputs: [
       { name: "_marketId", type: "uint256" },
-      { name: "_outcome", type: "bool" },
+      { name: "_winningOutcome", type: "uint256" },
     ],
     name: "resolveMarket",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
   },
+
+  // ─── claimWinnings ──────────────────────────────────────────
   {
     inputs: [{ name: "_marketId", type: "uint256" }],
     name: "claimWinnings",
@@ -40,32 +53,34 @@ export const PredictionMarketABI = [
     type: "function",
   },
 
-  // View Functions
+  // ─── getMarket ──────────────────────────────────────────────
   {
     inputs: [{ name: "_marketId", type: "uint256" }],
     name: "getMarket",
     outputs: [
-      {
-        components: [
-          { name: "id", type: "uint256" },
-          { name: "question", type: "string" },
-          { name: "imageURI", type: "string" },
-          { name: "category", type: "string" },
-          { name: "endTime", type: "uint256" },
-          { name: "totalYesAmount", type: "uint256" },
-          { name: "totalNoAmount", type: "uint256" },
-          { name: "resolved", type: "bool" },
-          { name: "outcome", type: "bool" },
-          { name: "creator", type: "address" },
-          { name: "createdAt", type: "uint256" },
-        ],
-        name: "",
-        type: "tuple",
-      },
+      { name: "id", type: "uint256" },
+      { name: "question", type: "string" },
+      { name: "rules", type: "string" },
+      { name: "imageURI", type: "string" },
+      { name: "category", type: "string" },
+      { name: "outcomeLabels", type: "string[]" },
+      { name: "outcomePools", type: "uint256[]" },
+      { name: "outcomeCount", type: "uint256" },
+      { name: "endTime", type: "uint256" },
+      { name: "startTime", type: "uint256" },
+      { name: "totalPool", type: "uint256" },
+      { name: "resolved", type: "bool" },
+      { name: "winningOutcome", type: "uint256" },
+      { name: "creator", type: "address" },
+      { name: "createdAt", type: "uint256" },
+      { name: "isPrivate", type: "bool" },
+      { name: "resolutionType", type: "uint8" },
     ],
     stateMutability: "view",
     type: "function",
   },
+
+  // ─── getBet ─────────────────────────────────────────────────
   {
     inputs: [
       { name: "_marketId", type: "uint256" },
@@ -76,7 +91,7 @@ export const PredictionMarketABI = [
       {
         components: [
           { name: "amount", type: "uint256" },
-          { name: "position", type: "bool" },
+          { name: "outcomeIndex", type: "uint256" },
           { name: "claimed", type: "bool" },
         ],
         name: "",
@@ -86,23 +101,17 @@ export const PredictionMarketABI = [
     stateMutability: "view",
     type: "function",
   },
+
+  // ─── getOutcomeOdds ─────────────────────────────────────────
   {
     inputs: [{ name: "_marketId", type: "uint256" }],
-    name: "getMarketOdds",
-    outputs: [
-      { name: "yesPercent", type: "uint256" },
-      { name: "noPercent", type: "uint256" },
-    ],
+    name: "getOutcomeOdds",
+    outputs: [{ name: "percents", type: "uint256[]" }],
     stateMutability: "view",
     type: "function",
   },
-  {
-    inputs: [{ name: "_marketId", type: "uint256" }],
-    name: "getTotalPool",
-    outputs: [{ name: "", type: "uint256" }],
-    stateMutability: "view",
-    type: "function",
-  },
+
+  // ─── getMarketBettors ───────────────────────────────────────
   {
     inputs: [{ name: "_marketId", type: "uint256" }],
     name: "getMarketBettors",
@@ -110,6 +119,8 @@ export const PredictionMarketABI = [
     stateMutability: "view",
     type: "function",
   },
+
+  // ─── getUserMarkets ─────────────────────────────────────────
   {
     inputs: [{ name: "_user", type: "address" }],
     name: "getUserMarkets",
@@ -117,6 +128,8 @@ export const PredictionMarketABI = [
     stateMutability: "view",
     type: "function",
   },
+
+  // ─── marketCount ────────────────────────────────────────────
   {
     inputs: [],
     name: "marketCount",
@@ -124,23 +137,20 @@ export const PredictionMarketABI = [
     stateMutability: "view",
     type: "function",
   },
-  {
-    inputs: [],
-    name: "platformFeePercent",
-    outputs: [{ name: "", type: "uint256" }],
-    stateMutability: "view",
-    type: "function",
-  },
 
-  // Events
+  // ─── Events ─────────────────────────────────────────────────
   {
     anonymous: false,
     inputs: [
       { indexed: true, name: "marketId", type: "uint256" },
       { indexed: false, name: "question", type: "string" },
       { indexed: false, name: "category", type: "string" },
+      { indexed: false, name: "outcomeCount", type: "uint256" },
+      { indexed: false, name: "startTime", type: "uint256" },
       { indexed: false, name: "endTime", type: "uint256" },
       { indexed: true, name: "creator", type: "address" },
+      { indexed: false, name: "isPrivate", type: "bool" },
+      { indexed: false, name: "resolutionType", type: "uint8" },
     ],
     name: "MarketCreated",
     type: "event",
@@ -150,7 +160,7 @@ export const PredictionMarketABI = [
     inputs: [
       { indexed: true, name: "marketId", type: "uint256" },
       { indexed: true, name: "bettor", type: "address" },
-      { indexed: false, name: "position", type: "bool" },
+      { indexed: false, name: "outcomeIndex", type: "uint256" },
       { indexed: false, name: "amount", type: "uint256" },
     ],
     name: "BetPlaced",
@@ -160,7 +170,8 @@ export const PredictionMarketABI = [
     anonymous: false,
     inputs: [
       { indexed: true, name: "marketId", type: "uint256" },
-      { indexed: false, name: "outcome", type: "bool" },
+      { indexed: false, name: "winningOutcome", type: "uint256" },
+      { indexed: false, name: "winningLabel", type: "string" },
       { indexed: false, name: "totalPool", type: "uint256" },
     ],
     name: "MarketResolved",
@@ -171,7 +182,7 @@ export const PredictionMarketABI = [
     inputs: [
       { indexed: true, name: "marketId", type: "uint256" },
       { indexed: true, name: "bettor", type: "address" },
-      { indexed: false, name: "amount", type: "uint256" },
+      { indexed: false, name: "payout", type: "uint256" },
     ],
     name: "WinningsClaimed",
     type: "event",

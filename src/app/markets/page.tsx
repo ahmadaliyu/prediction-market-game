@@ -31,27 +31,28 @@ export default function MarketsPage() {
   const { contracts, isConnected, address } = useWalletContext();
   const updateMarket = useMarketStore((s) => s.updateMarket);
 
-  const handlePlaceBet = async (position: boolean, amount: string) => {
+  const handlePlaceBet = async (outcomeIndex: number, amount: string) => {
     if (!isConnected) throw new Error('Connect your wallet first');
     if (selectedMarketId === null) throw new Error('No market selected');
-    await contracts.placeBet(selectedMarketId, position, amount);
+    await contracts.placeBet(selectedMarketId, outcomeIndex, amount, '');
     const updated = await contracts.getMarket(selectedMarketId);
     if (updated) updateMarket(updated);
   };
 
-  const handleResolve = async (outcome: boolean) => {
+  const handleResolve = async (winningOutcome: number) => {
     if (!resolveMarketData) return;
-    await contracts.resolveMarket(resolveMarketData.id, outcome);
+    await contracts.resolveMarket(resolveMarketData.id, winningOutcome);
     const updated = await contracts.getMarket(resolveMarketData.id);
     if (updated) updateMarket(updated);
   };
 
   const handleMarketClick = (market: MarketDisplay) => {
-    // If market is expired/ended and user is the creator, show resolve panel
+    // If market is ended and user is the creator, show resolve panel
     if (market.isExpired && !market.resolved && address &&
         market.creator.toLowerCase() === address.toLowerCase()) {
       setResolveMarketData(market);
-    } else {
+    } else if (!market.isExpired) {
+      // Only show betting panel if market hasn't ended yet
       selectMarket(market.id);
     }
   };
@@ -163,12 +164,12 @@ export default function MarketsPage() {
         </div>
 
         {markets.length === 0 && (
-          <div className="text-center py-20">
+          <div className="text-center py-20 bg-arena-card border border-arena-border rounded-2xl">
             <p className="text-gray-500 text-lg">No markets found</p>
             <p className="text-gray-600 text-sm mt-1 mb-4">Create a new market or adjust your filters</p>
             <a
               href="/create"
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-arena-primary to-arena-secondary text-black font-bold rounded-xl hover:shadow-[0_0_20px_rgba(0,240,255,0.3)] transition-all"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-arena-primary text-black font-bold rounded-xl hover:shadow-[0_0_15px_rgba(0,212,232,0.25)] transition-all"
             >
               Create Market
             </a>
@@ -182,11 +183,11 @@ export default function MarketsPage() {
       )}
 
       {/* Resolve Panel */}
-      {resolveMarketData && (
+      {resolveMarketData && address && (
         <ResolvePanel
           market={resolveMarketData}
           onResolve={handleResolve}
-          onClose={() => setResolveMarketData(null)}
+          isOwner={resolveMarketData.creator.toLowerCase() === address.toLowerCase()}
         />
       )}
     </main>

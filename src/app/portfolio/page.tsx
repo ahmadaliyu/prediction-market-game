@@ -22,7 +22,7 @@ export default function PortfolioPage() {
       // Enrich with potential payout
       const enriched = bets.map((bet) => {
         if (bet.market) {
-          const payout = calculatePayout(bet.amount, bet.position === 'YES', bet.market);
+          const payout = calculatePayout(bet.amount, bet.outcomeIndex, bet.market);
           return { ...bet, potentialPayout: payout };
         }
         return bet;
@@ -58,7 +58,7 @@ export default function PortfolioPage() {
 
   const totalBet = userBets.reduce((acc, b) => acc + parseFloat(b.amount), 0);
   const totalWon = resolvedBets
-    .filter((b) => b.market?.resolved && b.market?.outcome === (b.position === 'YES') && b.claimed)
+    .filter((b) => b.market?.resolved && b.market?.winningOutcome === b.outcomeIndex && b.claimed)
     .reduce((acc, b) => acc + parseFloat(b.potentialPayout || '0'), 0);
 
   if (!isConnected) {
@@ -168,9 +168,9 @@ export default function PortfolioPage() {
                         <p className="text-sm text-white font-medium mb-1">{bet.market?.question}</p>
                         <div className="flex items-center gap-3 text-xs">
                           <span className={`px-2 py-0.5 rounded-md font-bold ${
-                            bet.position === 'YES' ? 'bg-arena-green/20 text-arena-green' : 'bg-red-500/20 text-red-400'
+                            bet.outcomeIndex === 0 ? 'bg-arena-green/20 text-arena-green' : 'bg-purple-500/20 text-purple-400'
                           }`}>
-                            {bet.position}
+                            {bet.outcomeLabel}
                           </span>
                           <span className="text-gray-400">{bet.amount} AVAX</span>
                           <span className="text-gray-500">•</span>
@@ -195,7 +195,7 @@ export default function PortfolioPage() {
                 <h2 className="text-lg font-bold text-white mb-4">History</h2>
                 <div className="space-y-3">
                   {resolvedBets.map((bet, i) => {
-                    const won = bet.market?.resolved && bet.market?.outcome === (bet.position === 'YES');
+                    const won = bet.market?.resolved && bet.market?.winningOutcome === bet.outcomeIndex;
                     return (
                       <motion.div
                         key={bet.marketId}
@@ -208,9 +208,9 @@ export default function PortfolioPage() {
                           <p className="text-sm text-white font-medium mb-1">{bet.market?.question}</p>
                           <div className="flex items-center gap-3 text-xs">
                             <span className={`px-2 py-0.5 rounded-md font-bold ${
-                              bet.position === 'YES' ? 'bg-arena-green/20 text-arena-green' : 'bg-red-500/20 text-red-400'
+                              bet.outcomeIndex === 0 ? 'bg-arena-green/20 text-arena-green' : 'bg-purple-500/20 text-purple-400'
                             }`}>
-                              {bet.position}
+                              {bet.outcomeLabel}
                             </span>
                             <span className="text-gray-400">{bet.amount} AVAX</span>
                           </div>

@@ -2,10 +2,11 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Gamepad2, TrendingUp, Trophy, Wallet, PlusCircle, Menu, X } from 'lucide-react';
+import { Gamepad2, TrendingUp, Trophy, Wallet, PlusCircle, Menu, X, Moon, Sun } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import WalletButton from './WalletButton';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useThemeStore } from '@/store';
 
 const navItems = [
   { href: '/', label: 'Arena', icon: Gamepad2 },
@@ -19,12 +20,29 @@ export default function Navbar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { isDarkMode, toggleDarkMode, initTheme } = useThemeStore();
+
+  // Initialize theme from localStorage on mount
+  useEffect(() => {
+    initTheme();
+  }, [initTheme]);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Apply theme to document
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+      document.documentElement.classList.remove('light');
+    } else {
+      document.documentElement.classList.add('light');
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDarkMode]);
 
   return (
     <motion.nav
@@ -45,8 +63,8 @@ export default function Navbar() {
               <motion.div
                 whileHover={{ rotate: [0, -5, 5, 0], scale: 1.1 }}
                 transition={{ duration: 0.5 }}
-                className="w-9 h-9 rounded-lg bg-gradient-to-br from-arena-primary to-arena-secondary 
-                          flex items-center justify-center group-hover:shadow-[0_0_25px_rgba(0,240,255,0.6)] 
+                className="w-9 h-9 rounded-lg bg-arena-primary
+                          flex items-center justify-center group-hover:shadow-[0_0_20px_rgba(0,212,232,0.5)] 
                           transition-shadow duration-300"
               >
                 <span className="text-lg font-bold text-black">P</span>
@@ -58,7 +76,7 @@ export default function Navbar() {
               />
             </div>
             <div className="hidden sm:block">
-              <h1 className="text-base font-bold bg-gradient-to-r from-arena-primary to-arena-secondary bg-clip-text text-transparent">
+              <h1 className="text-base font-bold text-arena-primary">
                 Prediction Arena
               </h1>
               <p className="text-[10px] text-gray-500 -mt-0.5">on Avalanche</p>
@@ -95,6 +113,40 @@ export default function Navbar() {
 
           {/* Right side */}
           <div className="flex items-center gap-3">
+            {/* Dark mode toggle */}
+            <motion.button
+              onClick={toggleDarkMode}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="p-2 rounded-lg bg-arena-card border border-arena-border hover:border-arena-primary/50 
+                         transition-colors"
+              title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            >
+              <AnimatePresence mode="wait">
+                {isDarkMode ? (
+                  <motion.div
+                    key="moon"
+                    initial={{ rotate: -90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: 90, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Moon className="w-4 h-4 text-arena-primary" />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="sun"
+                    initial={{ rotate: 90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: -90, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Sun className="w-4 h-4 text-yellow-400" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.button>
+
             <WalletButton />
 
             {/* Mobile menu button */}
