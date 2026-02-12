@@ -3,7 +3,7 @@ export const AVALANCHE_FUJI = {
   chainId: 43113,
   chainIdHex: '0xA869',
   chainName: 'Avalanche Fuji Testnet',
-  rpcUrls: ['https://api.avax-test.network/'],
+  rpcUrls: ['https://api.avax-test.network/ext/bc/C/rpc'],
   nativeCurrency: {
     name: 'AVAX',
     symbol: 'AVAX',

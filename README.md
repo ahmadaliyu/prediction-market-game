@@ -1,4 +1,4 @@
-# 🎮 Prediction Market Arena
+# 🎮 Prediction Arena
 
 > **A 3D prediction market game built on Avalanche** — bet against AI agents in an immersive sci-fi arena.
 
@@ -10,7 +10,15 @@
 
 ---
 
-## 🕹️ How the Game Works
+## �️ Screenshots
+
+| Home Arena | Markets | Leaderboard |
+|------------|---------|-------------|
+| 3D arena with floating market orbs | Browse & filter active markets | Player rankings vs AI agents |
+
+---
+
+## �🕹️ How the Game Works
 
 ```
 ┌─────────────┐     ┌──────────────────┐     ┌─────────────────┐
@@ -32,19 +40,37 @@
 
 **The twist:** You're not betting into a void — 4 AI agents with distinct personalities compete against you. APEX bets aggressively on trends, GHOST only bets when confident, CHAOS is a contrarian wildcard, and ORACLE plays the data. Beat them all and climb the leaderboard.
 
-The entire betting/payout flow is handled by Solidity smart contracts on Avalanche C-Chain. The 3D arena is a visual layer — each floating orb is a live market, each avatar is an AI agent showing its current position. Click an orb to open the betting panel, which triggers the real on-chain transaction.
-
 ---
 
-## ✨ What Makes This Different
+## ✨ Features
 
-This isn't a typical prediction market UI. It's a **gaming experience**:
+### 🌐 Immersive 3D Arena
+- **React Three Fiber** powered sci-fi arena with floating market orbs
+- Particle field ambient effects and animated ring lights
+- Interactive 3D AI agent avatars with distinct visual styles
+- Smooth camera controls and responsive design
 
-- **3D Arena** — Markets float as glowing orbs in a sci-fi arena scene built with React Three Fiber
-- **AI Agent Competitors** — 4 distinct AI personalities (APEX, ORACLE, GHOST, CHAOS) that bet against you with unique strategies
-- **On-Chain Betting** — All bets are settled on Avalanche C-Chain smart contracts with a transparent 2% platform fee
-- **Real-Time Odds** — Dynamically calculated payout multipliers based on pool sizes
-- **Leaderboard** — Humans vs AI agents ranked by win rate, streaks, and PnL
+### 🤖 AI Agent Competitors
+- **4 unique AI personalities** with different betting strategies
+- Real-time agent activity and position tracking
+- Compete against APEX, ORACLE, GHOST, and CHAOS
+
+### ⛓️ On-Chain Betting
+- All bets settled on **Avalanche C-Chain** smart contracts
+- Transparent 2% platform fee
+- Real-time odds calculation based on pool sizes
+- Secure claim system for winners
+
+### 🎨 Modern UI/UX
+- Sleek dark theme with cyan accent colors
+- **Framer Motion** animations throughout
+- Responsive design for desktop and mobile
+- Animated counters, transitions, and micro-interactions
+
+### 📊 Dashboard & Stats
+- Portfolio page to track your bets and claim winnings
+- Leaderboard with top players vs AI agents
+- Live market statistics (volume, players, active markets)
 
 ---
 
@@ -208,8 +234,9 @@ This account has 10,000 ETH for testing.
 
 ```env
 PRIVATE_KEY=<your-deployer-wallet-private-key>
-FUJI_RPC_URL=https://api.avax-test.network/
+FUJI_RPC_URL=https://avalanche-fuji-c-chain-rpc.publicnode.com
 NEXT_PUBLIC_CHAIN_ID=43113
+NEXT_PUBLIC_RPC_URL=https://avalanche-fuji-c-chain-rpc.publicnode.com
 ```
 
 **Step 3 — Deploy:**
@@ -348,8 +375,22 @@ npx hardhat ignition deploy ignition/modules/PredictionMarket.ts                
 | Network | Chain ID | RPC | Notes |
 |---|---|---|---|
 | Localhost (Hardhat) | 31337 | `http://127.0.0.1:8545` | Default for development |
-| Avalanche Fuji (Testnet) | 43113 | `https://api.avax-test.network/` | Get test AVAX from [faucet](https://faucet.avax.network/) |
+| Avalanche Fuji (Testnet) | 43113 | `https://avalanche-fuji-c-chain-rpc.publicnode.com` | Get test AVAX from [faucet](https://faucet.avax.network/) |
 | Avalanche Mainnet | 43114 | `https://api.avax.network/ext/bc/C/rpc` | Production |
+
+---
+
+## 🚀 Deploying to Vercel
+
+After deploying your contracts to Fuji testnet, add these environment variables in Vercel:
+
+| Variable | Value |
+|---|---|
+| `NEXT_PUBLIC_PREDICTION_MARKET_ADDRESS` | Your deployed PredictionMarket address |
+| `NEXT_PUBLIC_MARKET_FACTORY_ADDRESS` | Your deployed MarketFactory address |
+| `NEXT_PUBLIC_CHAIN_ID` | `43113` |
+| `NEXT_PUBLIC_RPC_URL` | `https://avalanche-fuji-c-chain-rpc.publicnode.com` |
+| `NEXT_PUBLIC_EXPLORER_URL` | `https://testnet.snowtrace.io` |
 
 ---
 
