@@ -98,7 +98,6 @@ export default function HomePage() {
         <div className="absolute inset-0">
           <ArenaScene />
         </div>
-        <div className="absolute inset-0 bg-arena-dark/60 pointer-events-none" />
         <div className="absolute bottom-0 left-0 right-0 p-8 pointer-events-none">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
