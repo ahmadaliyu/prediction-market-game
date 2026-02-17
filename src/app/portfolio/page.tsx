@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Wallet, TrendingUp, TrendingDown, Clock, CheckCircle, XCircle, Loader2, RefreshCw } from 'lucide-react';
+import { Wallet, TrendingUp, Clock, CheckCircle, XCircle, Loader2, RefreshCw } from 'lucide-react';
 import Navbar from '@/components/ui/Navbar';
 import { useWalletContext } from '@/contexts/WalletContext';
 import { BetDisplay } from '@/lib/types';

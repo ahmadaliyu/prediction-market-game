@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 // GET /api/markets - Markets are now fetched directly from the chain via useContracts.
 // This route is kept as a placeholder for off-chain metadata extensions.
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     return NextResponse.json({
       success: true,

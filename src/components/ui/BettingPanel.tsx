@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, TrendingUp, AlertCircle, Loader2, ArrowRight, CheckCircle, Sparkles } from 'lucide-react';
+import { X, AlertCircle, Loader2, ArrowRight, CheckCircle, Sparkles } from 'lucide-react';
 import { MarketDisplay } from '@/lib/types';
 import { getCategoryConfig } from '@/lib/utils';
 import { useAppStore } from '@/store';

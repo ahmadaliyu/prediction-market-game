@@ -42,9 +42,10 @@ export default function ResolvePanel({
       setTimeout(() => {
         setShowSuccess(false);
       }, 2000);
-    } catch (err: any) {
+    } catch (err) {
       console.error("Resolution error:", err);
-      setError(err.message || "Failed to resolve market");
+      const errorMessage = err instanceof Error ? err.message : "Failed to resolve market";
+      setError(errorMessage);
     } finally {
       setIsResolving(false);
     }

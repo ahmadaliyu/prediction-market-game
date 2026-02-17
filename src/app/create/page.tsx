@@ -6,7 +6,6 @@ import {
   PlusCircle,
   Calendar,
   Tag,
-  ImageIcon,
   Loader2,
   CheckCircle,
   AlertCircle,
@@ -74,11 +73,10 @@ export default function CreatePage() {
   const [txHash, setTxHash] = useState('');
 
   // Calculate total probability (must equal 100 including unclassified)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const totalProbability = useMemo(() => {
     return outcomes.reduce((sum, o) => sum + o.probability, 0);
   }, [outcomes]);
-
-  const unclassifiedProbability = Math.max(0, 100 - totalProbability);
 
   // Add outcome
   const addOutcome = () => {
@@ -471,7 +469,7 @@ export default function CreatePage() {
               </div>
               <p className="text-xs text-gray-500 mt-3 flex items-start gap-1">
                 <Info className="w-3 h-3 mt-0.5 flex-shrink-0" />
-                "Unclassified" is a mandatory fallback if the event is cancelled, rules are ambiguous, or the result doesn't match any option.
+                &quot;Unclassified&quot; is a mandatory fallback if the event is cancelled, rules are ambiguous, or the result doesn&apos;t match any option.
               </p>
             </div>
 
@@ -709,7 +707,7 @@ export default function CreatePage() {
 
             {/* Creator earnings note */}
             <p className="text-center text-xs text-gray-500">
-              As the market creator, you'll earn 1.2% of all trading volume.
+              As the market creator, you&apos;ll earn 1.2% of all trading volume.
             </p>
           </motion.div>
         )}

@@ -8,6 +8,7 @@ interface MarketInput {
 }
 
 // AI Agent decision logic
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function makeAIDecision(
   personality: string,
   market: MarketInput

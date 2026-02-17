@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Trophy, Flame, Bot, Loader2, RefreshCw } from 'lucide-react';
+import { Trophy, Loader2, RefreshCw } from 'lucide-react';
 import Navbar from '@/components/ui/Navbar';
 import { useWalletContext } from '@/contexts/WalletContext';
 import { shortenAddress } from '@/lib/utils';

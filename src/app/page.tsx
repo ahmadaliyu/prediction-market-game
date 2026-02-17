@@ -11,7 +11,7 @@ import BettingPanel from '@/components/ui/BettingPanel';
 import { useMarketStore, useAppStore } from '@/store';
 import { useWalletContext } from '@/contexts/WalletContext';
 import { AI_AGENTS } from '@/lib/constants';
-import { AIAgentDisplay, MarketDisplay } from '@/lib/types';
+import { AIAgentDisplay } from '@/lib/types';
 import Link from 'next/link';
 
 const ArenaScene = dynamic(() => import('@/components/3d/ArenaScene'), {
@@ -56,7 +56,7 @@ function AnimatedCounter({ value, suffix = '' }: { value: string; suffix?: strin
 }
 
 export default function HomePage() {
-  const { contracts, address } = useWalletContext();
+  const { contracts } = useWalletContext();
   const markets = useMarketStore((s) => s.markets);
   const { selectedMarketId, showBettingPanel } = useAppStore();
   const selectMarket = useAppStore((s) => s.selectMarket);
