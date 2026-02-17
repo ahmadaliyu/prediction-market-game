@@ -75,10 +75,34 @@ export function useWallet() {
     }
   }, [updateBalance]);
 
-  const disconnect = useCallback(() => {
-    setWallet(initialState);
-    setProvider(null);
-    setSigner(null);
+  const disconnect = useCallback(async () => {
+    try {
+      // Clear all wallet state
+      setWallet(initialState);
+      setProvider(null);
+      setSigner(null);
+
+      // Try to revoke permissions if the wallet supports it
+      // This allows connecting to a fresh wallet without page refresh
+      if (window.ethereum?.request) {
+        try {
+          await window.ethereum.request({
+            method: 'wallet_revokePermissions',
+            params: [{ eth_accounts: {} }],
+          });
+        } catch (revokeError) {
+          // Ignore errors - not all wallets support this method
+          // The important part is clearing our local state
+          console.debug('wallet_revokePermissions not supported or failed:', revokeError);
+        }
+      }
+    } catch (error) {
+      console.error('Error during disconnect:', error);
+      // Still clear state even if revoke fails
+      setWallet(initialState);
+      setProvider(null);
+      setSigner(null);
+    }
   }, []);
 
   const switchChain = useCallback(async () => {

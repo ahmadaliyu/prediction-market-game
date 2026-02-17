@@ -30,11 +30,20 @@ export default function WalletButton() {
     // Request wallet to show account picker
     if (window.ethereum) {
       try {
-        await window.ethereum.request({
-          method: 'wallet_requestPermissions',
-          params: [{ eth_accounts: {} }],
-        });
-        // After permission granted, reconnect to get the new account
+        try {
+          await window.ethereum.request({
+            method: 'wallet_requestPermissions',
+            params: [{ eth_accounts: {} }],
+          });
+        } catch (permissionError) {
+          const code = (permissionError as { code?: number })?.code;
+          // Ignore user rejection/pending request and fall back to connect
+          if (code !== 4001 && code !== -32002 && code !== -32601) {
+            console.warn('wallet_requestPermissions failed:', permissionError);
+          }
+        }
+
+        // After permission attempt, reconnect to refresh the active account
         await connect();
       } catch (err) {
         console.error('Switch wallet error:', err);

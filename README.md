@@ -348,12 +348,98 @@ Each AI agent has its own decision-making logic in `/src/app/api/agents/route.ts
 
 ---
 
+## � Environment Configuration
+
+This project uses **two separate environment files** to cleanly separate local development from production/testnet deployment:
+
+### `.env.local` — Local Development (Hardhat)
+
+Used when running `npm run dev` for local development with Hardhat.
+
+```env
+# Local Development Environment
+# Used for: npm run dev with Hardhat node
+
+# Deployment addresses (from Hardhat localhost deployment)
+NEXT_PUBLIC_PREDICTION_MARKET_ADDRESS=0x5FbDB2315678afecb367f032d93F642f64180aa3
+NEXT_PUBLIC_MARKET_FACTORY_ADDRESS=0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512
+
+# Network config (empty CHAIN_ID = localhost default)
+NEXT_PUBLIC_CHAIN_ID=
+NEXT_PUBLIC_RPC_URL=http://127.0.0.1:8545
+NEXT_PUBLIC_EXPLORER_URL=http://localhost:8545
+
+# Hardhat deployment keys
+FUJI_RPC_URL=https://avalanche-fuji-c-chain-rpc.publicnode.com
+PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+```
+
+**When to use:** 
+- Local development with `npx hardhat node` running
+- Testing with Hardhat's pre-funded accounts
+- Rapid iteration without spending real testnet AVAX
+
+### `.env.production` — Production (Fuji Testnet)
+
+Used for production builds and Vercel deployment.
+
+```env
+# Production Environment (Fuji Testnet)
+# Used for: npm run build, Vercel deployment
+
+# Network config
+NEXT_PUBLIC_CHAIN_ID=43113
+NEXT_PUBLIC_RPC_URL=https://avalanche-fuji-c-chain-rpc.publicnode.com
+NEXT_PUBLIC_EXPLORER_URL=https://testnet.snowtrace.io
+
+# Deployment addresses (fill these after deploying to Fuji)
+NEXT_PUBLIC_PREDICTION_MARKET_ADDRESS=
+NEXT_PUBLIC_MARKET_FACTORY_ADDRESS=
+```
+
+**When to use:**
+- Building for production (`npm run build`)
+- Deploying to Vercel or other hosting platforms
+- Testing with real Fuji testnet AVAX
+- Sharing your app with others
+
+### Switching Between Environments
+
+**For local development:**
+```bash
+# 1. Start Hardhat node
+npx hardhat node
+
+# 2. Deploy contracts locally (in another terminal)
+npm run deploy:local
+
+# 3. Copy addresses to .env.local
+# 4. Start Next.js dev server
+npm run dev
+```
+
+**For production deployment:**
+```bash
+# 1. Deploy to Fuji testnet
+npm run deploy:fuji
+
+# 2. Copy addresses to .env.production
+# 3. Build and test production build
+npm run build && npm run start
+
+# 4. Deploy to Vercel (it will use .env.production automatically)
+```
+
+> **Note:** Next.js automatically uses `.env.local` for `npm run dev` and `.env.production` for `npm run build`. You don't need to manually switch files!
+
+---
+
 ## 📜 Available Scripts
 
 ```bash
 # Frontend
-npm run dev          # Start Next.js dev server on http://localhost:3000
-npm run build        # Production build
+npm run dev          # Start Next.js dev server (uses .env.local)
+npm run build        # Production build (uses .env.production)
 npm run start        # Start production server
 npm run lint         # ESLint
 
@@ -363,9 +449,36 @@ npx hardhat test     # Run contract tests
 npx hardhat node     # Start local Hardhat JSON-RPC node (port 8545)
 
 # Deployment (Hardhat Ignition)
+npm run deploy:local           # Deploy to localhost + print addresses
+npm run deploy:fuji            # Deploy to Fuji + print addresses
+npm run print:deploy:local     # Print local deployment addresses
+npm run print:deploy:fuji      # Print Fuji deployment addresses
+npm run reset:deploy:local     # Clear local Ignition state
+npm run reset:deploy:fuji      # Clear Fuji Ignition state (fixes reconciliation errors)
+
+# Manual Deployment
 npx hardhat ignition deploy ignition/modules/PredictionMarket.ts --network localhost  # Local
 npx hardhat ignition deploy ignition/modules/PredictionMarket.ts --network fuji       # Fuji testnet
 npx hardhat ignition deploy ignition/modules/PredictionMarket.ts                      # In-memory (dry run)
+```
+
+### Useful Script Combinations
+
+**Fresh local development setup:**
+```bash
+npm run reset:deploy:local && npm run deploy:local
+```
+
+**Deploy to Fuji and verify addresses:**
+```bash
+npm run deploy:fuji
+# Copy the printed addresses to .env.production
+```
+
+**Fix Ignition reconciliation errors:**
+```bash
+# If you see "Reconciliation detected differences" error
+npm run reset:deploy:fuji && npm run deploy:fuji
 ```
 
 ---

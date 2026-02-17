@@ -595,7 +595,7 @@ export default function CreatePage() {
             )}
 
             {/* Image URI */}
-            <div className="bg-arena-card border border-arena-border rounded-2xl p-5">
+            {/* <div className="bg-arena-card border border-arena-border rounded-2xl p-5">
               <label className="text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
                 <ImageIcon className="w-4 h-4 text-gray-400" /> Cover Image (optional)
               </label>
@@ -607,7 +607,7 @@ export default function CreatePage() {
                 className="w-full px-4 py-3 bg-arena-surface border border-arena-border rounded-xl text-white 
                            placeholder-gray-500 focus:outline-none focus:border-arena-primary/50 transition-colors"
               />
-            </div>
+            </div> */}
 
             {/* Liquidity Section (collapsible) */}
             <div className="bg-arena-card border border-arena-border rounded-2xl overflow-hidden">
