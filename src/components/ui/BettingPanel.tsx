@@ -6,6 +6,7 @@ import { X, AlertCircle, Loader2, ArrowRight, CheckCircle, Sparkles } from 'luci
 import { MarketDisplay } from '@/lib/types';
 import { getCategoryConfig } from '@/lib/utils';
 import { useAppStore } from '@/store';
+import AIInsightBadge from '@/components/ui/AIInsightBadge';
 
 interface BettingPanelProps {
   market: MarketDisplay;
@@ -146,6 +147,11 @@ export default function BettingPanel({ market, onPlaceBet }: BettingPanelProps) 
               <span className="text-gray-400">Ends: {market.timeRemaining}</span>
             </div>
           </div>
+
+          {/* AI Insight */}
+          {market.status === 'active' && (
+            <AIInsightBadge market={market} />
+          )}
 
           {/* Outcome Selection */}
           <div>

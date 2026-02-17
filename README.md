@@ -198,12 +198,10 @@ Paste the deployed addresses into `.env.local`:
 ```env
 NEXT_PUBLIC_PREDICTION_MARKET_ADDRESS=0x5FbDB2315678afecb367f032d93F642f64180aa3
 NEXT_PUBLIC_MARKET_FACTORY_ADDRESS=0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512
-NEXT_PUBLIC_CHAIN_ID=
-NEXT_PUBLIC_RPC_URL=http://127.0.0.1:8545
 PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
 ```
 
-> When `NEXT_PUBLIC_CHAIN_ID` is empty, the app defaults to localhost (chainId 31337).
+> In development (`npm run dev`), the app automatically connects to localhost (chainId 31337). In production builds, it uses Avalanche Fuji.
 
 **Step 4 — Add the local network to MetaMask:**
 
@@ -235,8 +233,6 @@ This account has 10,000 ETH for testing.
 ```env
 PRIVATE_KEY=<your-deployer-wallet-private-key>
 FUJI_RPC_URL=https://avalanche-fuji-c-chain-rpc.publicnode.com
-NEXT_PUBLIC_CHAIN_ID=43113
-NEXT_PUBLIC_RPC_URL=https://avalanche-fuji-c-chain-rpc.publicnode.com
 ```
 
 **Step 3 — Deploy:**
@@ -364,14 +360,12 @@ Used when running `npm run dev` for local development with Hardhat.
 NEXT_PUBLIC_PREDICTION_MARKET_ADDRESS=0x5FbDB2315678afecb367f032d93F642f64180aa3
 NEXT_PUBLIC_MARKET_FACTORY_ADDRESS=0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512
 
-# Network config (empty CHAIN_ID = localhost default)
-NEXT_PUBLIC_CHAIN_ID=
-NEXT_PUBLIC_RPC_URL=http://127.0.0.1:8545
-NEXT_PUBLIC_EXPLORER_URL=http://localhost:8545
-
 # Hardhat deployment keys
 FUJI_RPC_URL=https://avalanche-fuji-c-chain-rpc.publicnode.com
 PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+
+# OpenAI API Key for AI features
+OPENAI_API_KEY=
 ```
 
 **When to use:** 
@@ -387,14 +381,12 @@ Used for production builds and Vercel deployment.
 # Production Environment (Fuji Testnet)
 # Used for: npm run build, Vercel deployment
 
-# Network config
-NEXT_PUBLIC_CHAIN_ID=43113
-NEXT_PUBLIC_RPC_URL=https://avalanche-fuji-c-chain-rpc.publicnode.com
-NEXT_PUBLIC_EXPLORER_URL=https://testnet.snowtrace.io
-
 # Deployment addresses (fill these after deploying to Fuji)
 NEXT_PUBLIC_PREDICTION_MARKET_ADDRESS=
 NEXT_PUBLIC_MARKET_FACTORY_ADDRESS=
+
+# OpenAI API Key for AI features
+OPENAI_API_KEY=
 ```
 
 **When to use:**
@@ -501,9 +493,9 @@ After deploying your contracts to Fuji testnet, add these environment variables 
 |---|---|
 | `NEXT_PUBLIC_PREDICTION_MARKET_ADDRESS` | Your deployed PredictionMarket address |
 | `NEXT_PUBLIC_MARKET_FACTORY_ADDRESS` | Your deployed MarketFactory address |
-| `NEXT_PUBLIC_CHAIN_ID` | `43113` |
-| `NEXT_PUBLIC_RPC_URL` | `https://avalanche-fuji-c-chain-rpc.publicnode.com` |
-| `NEXT_PUBLIC_EXPLORER_URL` | `https://testnet.snowtrace.io` |
+| `OPENAI_API_KEY` | Your OpenAI API key |
+
+> Chain config (RPC URLs, chain ID, explorer) is hardcoded in the source code — no env vars needed for those.
 
 ---
 

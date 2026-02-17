@@ -8,6 +8,7 @@ import Navbar from '@/components/ui/Navbar';
 import MarketCard from '@/components/ui/MarketCard';
 import AIAgentCard from '@/components/ui/AIAgentCard';
 import BettingPanel from '@/components/ui/BettingPanel';
+import AIArenaSection from '@/components/ui/AIArenaSection';
 import { useMarketStore, useAppStore } from '@/store';
 import { useWalletContext } from '@/contexts/WalletContext';
 import { AI_AGENTS } from '@/lib/constants';
@@ -222,6 +223,9 @@ export default function HomePage() {
           ))}
         </div>
       </section>
+
+      {/* AI Arena Intelligence — Real-time AI agent decisions */}
+      <AIArenaSection markets={markets} />
 
       {/* Live Markets */}
       <section className="max-w-7xl mx-auto px-6 pb-20">

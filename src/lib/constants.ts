@@ -3,7 +3,7 @@ export const AVALANCHE_FUJI = {
   chainId: 43113,
   chainIdHex: '0xA869',
   chainName: 'Avalanche Fuji Testnet',
-  rpcUrls: ['https://api.avax-test.network/ext/bc/C/rpc'],
+  rpcUrls: ['https://avalanche-fuji-c-chain-rpc.publicnode.com'],
   nativeCurrency: {
     name: 'AVAX',
     symbol: 'AVAX',
@@ -38,8 +38,8 @@ export const LOCALHOST = {
   blockExplorerUrls: [''],
 };
 
-// Use localhost for development, Fuji for testnet
-export const ACTIVE_CHAIN = process.env.NEXT_PUBLIC_CHAIN_ID === '43113' ? AVALANCHE_FUJI : LOCALHOST;
+// Use Fuji in production, localhost in development
+export const ACTIVE_CHAIN = process.env.NODE_ENV === 'production' ? AVALANCHE_FUJI : LOCALHOST;
 
 export const CONTRACTS = {
   PREDICTION_MARKET: process.env.NEXT_PUBLIC_PREDICTION_MARKET_ADDRESS || '',

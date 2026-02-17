@@ -5,6 +5,7 @@ import { getCategoryConfig } from '@/lib/utils';
 import { MarketDisplay } from '@/lib/types';
 import { Clock, Users, TrendingUp, Zap, Lock, Bot, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
+import AIInsightBadge from '@/components/ui/AIInsightBadge';
 
 interface MarketCardProps {
   market: MarketDisplay;
@@ -87,6 +88,9 @@ export default function MarketCard({ market, onClick, index = 0 }: MarketCardPro
             >
               <Zap className="w-3 h-3" /> Hot
             </motion.span>
+          )}
+          {market.status === 'active' && (
+            <AIInsightBadge market={market} compact />
           )}
         </div>
         <div className="flex items-center gap-1 text-gray-400">

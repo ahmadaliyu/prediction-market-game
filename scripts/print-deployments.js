@@ -81,16 +81,6 @@ try {
     console.log(`NEXT_PUBLIC_MARKET_FACTORY_ADDRESS=${marketFactoryAddress}`);
   }
   
-  if (chainId === '43113') {
-    console.log(`NEXT_PUBLIC_CHAIN_ID=43113`);
-    console.log(`NEXT_PUBLIC_RPC_URL=https://avalanche-fuji-c-chain-rpc.publicnode.com`);
-    console.log(`NEXT_PUBLIC_EXPLORER_URL=https://testnet.snowtrace.io`);
-  } else if (chainId === '31337') {
-    console.log(`NEXT_PUBLIC_CHAIN_ID=`);
-    console.log(`NEXT_PUBLIC_RPC_URL=http://127.0.0.1:8545`);
-    console.log(`NEXT_PUBLIC_EXPLORER_URL=`);
-  }
-  
   console.log('');
   console.log('═══════════════════════════════════════════════════════════');
   console.log('');
