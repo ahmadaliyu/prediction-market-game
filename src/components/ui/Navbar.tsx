@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Gamepad2, TrendingUp, Trophy, Wallet, PlusCircle, Menu, X, Moon, Sun } from 'lucide-react';
+import { Gamepad2, TrendingUp, Trophy, Wallet, PlusCircle, Menu, X, Moon, Sun, Bot } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import WalletButton from './WalletButton';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -11,6 +11,7 @@ import { useThemeStore } from '@/store';
 const navItems = [
   { href: '/', label: 'Arena', icon: Gamepad2 },
   { href: '/markets', label: 'Markets', icon: TrendingUp },
+  { href: '/agents', label: 'AI Agents', icon: Bot },
   { href: '/leaderboard', label: 'Leaderboard', icon: Trophy },
   { href: '/portfolio', label: 'Portfolio', icon: Wallet },
   { href: '/create', label: 'Create', icon: PlusCircle },

@@ -50,10 +50,11 @@ export default function AIChatPanel({ market }: AIChatPanelProps) {
     }
   }, [isOpen, market, messages.length]);
 
-  const sendMessage = async () => {
-    if (!input.trim() || isLoading) return;
+  const sendMessage = async (directMessage?: string) => {
+    const text = directMessage || input.trim();
+    if (!text || isLoading) return;
 
-    const userMessage: ChatMessage = { role: 'user', content: input.trim() };
+    const userMessage: ChatMessage = { role: 'user', content: text };
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
     setInput('');
@@ -144,21 +145,22 @@ export default function AIChatPanel({ market }: AIChatPanelProps) {
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full 
+            className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 
+                       px-5 py-3.5 rounded-2xl
                        bg-gradient-to-r from-cyan-500 to-blue-600 
-                       shadow-[0_4px_20px_rgba(0,240,255,0.4)]
-                       flex items-center justify-center
-                       hover:shadow-[0_4px_30px_rgba(0,240,255,0.6)]
+                       shadow-[0_4px_25px_rgba(0,240,255,0.4)]
+                       hover:shadow-[0_4px_35px_rgba(0,240,255,0.6)]
                        transition-shadow duration-300"
           >
-            <Bot className="w-6 h-6 text-white" />
+            <Bot className="w-5 h-5 text-white" />
+            <span className="text-sm font-semibold text-white">Ask AI</span>
             <motion.div
-              animate={{ scale: [1, 1.3, 1] }}
+              animate={{ scale: [1, 1.3, 1], opacity: [0.8, 0.4, 0.8] }}
               transition={{ repeat: Infinity, duration: 2 }}
-              className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-arena-dark"
+              className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-green-400 rounded-full border-2 border-arena-dark"
             />
           </motion.button>
         )}
@@ -279,12 +281,7 @@ export default function AIChatPanel({ market }: AIChatPanelProps) {
                   {quickQuestions.map((q, i) => (
                     <button
                       key={i}
-                      onClick={() => {
-                        setInput(q);
-                        setTimeout(() => {
-                          sendMessage();
-                        }, 50);
-                      }}
+                      onClick={() => sendMessage(q)}
                       className="text-[11px] px-2.5 py-1.5 rounded-lg bg-arena-card border border-arena-border
                                  text-gray-300 hover:border-cyan-500/50 hover:text-cyan-300
                                  transition-colors duration-200"

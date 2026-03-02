@@ -95,6 +95,7 @@ export const AI_AGENTS = [
 export const NAV_ITEMS = [
   { id: 'arena', label: 'Arena', icon: 'Gamepad2', href: '/' },
   { id: 'markets', label: 'Markets', icon: 'TrendingUp', href: '/markets' },
+  { id: 'agents', label: 'AI Agents', icon: 'Bot', href: '/agents' },
   { id: 'leaderboard', label: 'Leaderboard', icon: 'Trophy', href: '/leaderboard' },
   { id: 'portfolio', label: 'Portfolio', icon: 'Wallet', href: '/portfolio' },
   { id: 'create', label: 'Create', icon: 'PlusCircle', href: '/create' },
