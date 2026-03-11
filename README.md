@@ -42,7 +42,7 @@
 
 ---
 
-## ✨ Features
+## ✨ Features of the app
 
 ### 🌐 Immersive 3D Arena
 - **React Three Fiber** powered sci-fi arena with floating market orbs
