@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -85,9 +85,9 @@ export default function BettingPanel({ market, onPlaceBet }: BettingPanelProps) 
               <CheckCircle className="w-12 h-12 text-arena-green" />
             </div>
           </div>
-          <h3 className="text-2xl font-bold text-white mb-2">Bet Placed! 🎉</h3>
+          <h3 className="text-2xl font-bold text-white mb-2">Bet Placed! ðŸŽ‰</h3>
           <p className="text-gray-400">
-            {amount} AVAX on <span className="text-arena-primary font-bold">{selectedLabel}</span>
+            {amount} APT on <span className="text-arena-primary font-bold">{selectedLabel}</span>
           </p>
         </motion.div>
       </motion.div>
@@ -143,7 +143,7 @@ export default function BettingPanel({ market, onPlaceBet }: BettingPanelProps) 
               <p className="text-gray-500 text-xs mt-2 leading-relaxed">{market.rules}</p>
             )}
             <div className="mt-3 flex items-center justify-between text-xs">
-              <span className="text-gray-400">Pool: {market.totalPool} AVAX</span>
+              <span className="text-gray-400">Pool: {market.totalPool} APT</span>
               <span className="text-gray-400">Ends: {market.timeRemaining}</span>
             </div>
           </div>
@@ -193,7 +193,7 @@ export default function BettingPanel({ market, onPlaceBet }: BettingPanelProps) 
 
           {/* Amount */}
           <div>
-            <label className="text-sm text-gray-400 mb-2 block">Bet Amount (AVAX)</label>
+            <label className="text-sm text-gray-400 mb-2 block">Bet Amount (APT)</label>
             <div className="relative">
               <input
                 type="number"
@@ -206,7 +206,7 @@ export default function BettingPanel({ market, onPlaceBet }: BettingPanelProps) 
                            placeholder-gray-500 focus:outline-none focus:border-arena-primary/50 transition-all"
               />
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-arena-primary font-medium">
-                AVAX
+                APT
               </span>
             </div>
             <div className="flex gap-2 mt-2">
@@ -235,7 +235,7 @@ export default function BettingPanel({ market, onPlaceBet }: BettingPanelProps) 
             >
               <div className="flex justify-between">
                 <span className="text-xs text-gray-400">Your Bet</span>
-                <span className="text-sm text-white font-medium">{amount} AVAX</span>
+                <span className="text-sm text-white font-medium">{amount} APT</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-xs text-gray-400">Outcome</span>

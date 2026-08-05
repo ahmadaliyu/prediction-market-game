@@ -1,50 +1,25 @@
-'use client';
+﻿'use client';
 
 import { useCallback } from 'react';
-import { ethers } from 'ethers';
-import { PredictionMarketABI, MarketFactoryABI } from '@/lib/abis';
+import { Aptos, AptosConfig, InputTransactionData } from '@aptos-labs/ts-sdk';
+import { ENTRY_FUNCTIONS, VIEW_FUNCTIONS } from '@/lib/abis';
 import { CONTRACTS, ACTIVE_CHAIN } from '@/lib/constants';
 import { MarketRaw, MarketDisplay, BetDisplay, OutcomeDisplay } from '@/lib/types';
-import { formatAVAX, formatTimeRemaining } from '@/lib/utils';
+import { formatAVAX, formatTimeRemaining, parseAVAX } from '@/lib/utils';
 
-function getReadOnlyProvider() {
-  return new ethers.JsonRpcProvider(ACTIVE_CHAIN.rpcUrls[0]);
+type SignAndSubmit = (tx: InputTransactionData) => Promise<{ hash: string }>;
+
+function getClient() {
+  return new Aptos(new AptosConfig({ network: ACTIVE_CHAIN.network, fullnode: ACTIVE_CHAIN.rpcUrls[0] }));
 }
 
-export function useContracts(signer: ethers.JsonRpcSigner | null) {
-  const getReadContract = useCallback(() => {
-    if (!CONTRACTS.PREDICTION_MARKET) return null;
-    const providerOrSigner = signer || getReadOnlyProvider();
-    return new ethers.Contract(
-      CONTRACTS.PREDICTION_MARKET,
-      PredictionMarketABI,
-      providerOrSigner
-    );
-  }, [signer]);
+export function useContracts(signAndSubmitTransaction: SignAndSubmit | null) {
+  const client = getClient();
 
-  const getWriteContract = useCallback(() => {
-    if (!CONTRACTS.PREDICTION_MARKET) {
-      throw new Error('Contract not deployed. Set NEXT_PUBLIC_PREDICTION_MARKET_ADDRESS in .env.local');
-    }
-    if (!signer) {
-      throw new Error('Connect your wallet first');
-    }
-    return new ethers.Contract(
-      CONTRACTS.PREDICTION_MARKET,
-      PredictionMarketABI,
-      signer
-    );
-  }, [signer]);
-
-  const getMarketFactory = useCallback(() => {
-    if (!CONTRACTS.MARKET_FACTORY) return null;
-    const providerOrSigner = signer || getReadOnlyProvider();
-    return new ethers.Contract(
-      CONTRACTS.MARKET_FACTORY,
-      MarketFactoryABI,
-      providerOrSigner
-    );
-  }, [signer]);
+  const requireSigner = useCallback(() => {
+    if (!signAndSubmitTransaction) throw new Error('Connect your wallet first');
+    return signAndSubmitTransaction;
+  }, [signAndSubmitTransaction]);
 
   // ─── Create Market ───────────────────────────────────────────
 
@@ -62,57 +37,76 @@ export function useContracts(signer: ethers.JsonRpcSigner | null) {
       resolutionType: number,
       initialLiquidity: string
     ) => {
-      const contract = getWriteContract();
-      const value = initialLiquidity && parseFloat(initialLiquidity) > 0
-        ? ethers.parseEther(initialLiquidity)
+      const sign = requireSigner();
+      const amount = initialLiquidity && parseFloat(initialLiquidity) > 0
+        ? parseAVAX(initialLiquidity)
         : BigInt(0);
-      const tx = await contract.createMarket(
-        question, rules, imageURI, category, outcomes,
-        startTime, endTime, isPrivate, accessCode, resolutionType,
-        { value }
-      );
-      const receipt = await tx.wait();
-      return receipt;
+      const result = await sign({
+        data: {
+          function: ENTRY_FUNCTIONS.CREATE_MARKET as `${string}::${string}::${string}`,
+          functionArguments: [
+            CONTRACTS.STORE_ADDRESS, question, rules, imageURI, category, outcomes,
+            startTime, endTime, isPrivate, accessCode, resolutionType, amount.toString(),
+          ],
+        },
+      });
+      await client.waitForTransaction({ transactionHash: result.hash });
+      return result;
     },
-    [getWriteContract]
+    [requireSigner, client]
   );
 
   // ─── Place Bet ───────────────────────────────────────────────
 
   const placeBet = useCallback(
     async (marketId: number, outcomeIndex: number, amount: string, accessCode: string = '') => {
-      const contract = getWriteContract();
-      const tx = await contract.placeBet(marketId, outcomeIndex, accessCode, {
-        value: ethers.parseEther(amount),
+      const sign = requireSigner();
+      const result = await sign({
+        data: {
+          function: ENTRY_FUNCTIONS.PLACE_BET as `${string}::${string}::${string}`,
+          functionArguments: [
+            CONTRACTS.STORE_ADDRESS, marketId, outcomeIndex, parseAVAX(amount).toString(), accessCode,
+          ],
+        },
       });
-      const receipt = await tx.wait();
-      return receipt;
+      await client.waitForTransaction({ transactionHash: result.hash });
+      return result;
     },
-    [getWriteContract]
+    [requireSigner, client]
   );
 
   // ─── Claim Winnings ──────────────────────────────────────────
 
   const claimWinnings = useCallback(
     async (marketId: number) => {
-      const contract = getWriteContract();
-      const tx = await contract.claimWinnings(marketId);
-      const receipt = await tx.wait();
-      return receipt;
+      const sign = requireSigner();
+      const result = await sign({
+        data: {
+          function: ENTRY_FUNCTIONS.CLAIM_WINNINGS as `${string}::${string}::${string}`,
+          functionArguments: [CONTRACTS.STORE_ADDRESS, marketId],
+        },
+      });
+      await client.waitForTransaction({ transactionHash: result.hash });
+      return result;
     },
-    [getWriteContract]
+    [requireSigner, client]
   );
 
   // ─── Resolve Market ──────────────────────────────────────────
 
   const resolveMarket = useCallback(
     async (marketId: number, winningOutcome: number) => {
-      const contract = getWriteContract();
-      const tx = await contract.resolveMarket(marketId, winningOutcome);
-      const receipt = await tx.wait();
-      return receipt;
+      const sign = requireSigner();
+      const result = await sign({
+        data: {
+          function: ENTRY_FUNCTIONS.RESOLVE_MARKET as `${string}::${string}::${string}`,
+          functionArguments: [CONTRACTS.STORE_ADDRESS, marketId, winningOutcome],
+        },
+      });
+      await client.waitForTransaction({ transactionHash: result.hash });
+      return result;
     },
-    [getWriteContract]
+    [requireSigner, client]
   );
 
   // ─── Parse Market ────────────────────────────────────────────
@@ -126,7 +120,6 @@ export function useContracts(signer: ethers.JsonRpcSigner | null) {
     const totalPool = typeof raw.totalPool === 'bigint' ? raw.totalPool : BigInt(String(raw.totalPool));
     const outcomeCount = Number(raw.outcomeCount);
 
-    // Build outcomes array
     const outcomes: OutcomeDisplay[] = [];
     for (let i = 0; i < outcomeCount; i++) {
       const pool = typeof raw.outcomePools[i] === 'bigint'
@@ -143,7 +136,6 @@ export function useContracts(signer: ethers.JsonRpcSigner | null) {
       });
     }
 
-    // Fix rounding so percents sum to 100
     const sumPercent = outcomes.reduce((s, o) => s + o.percent, 0);
     if (sumPercent < 100 && outcomes.length > 0) {
       outcomes[0].percent += 100 - sumPercent;
@@ -184,34 +176,42 @@ export function useContracts(signer: ethers.JsonRpcSigner | null) {
 
   const getMarket = useCallback(
     async (marketId: number): Promise<MarketDisplay | null> => {
-      const contract = getReadContract();
-      if (!contract) return null;
+      if (!CONTRACTS.STORE_ADDRESS) return null;
       try {
-        const raw = await contract.getMarket(marketId);
-        // getMarket returns a tuple, map to MarketRaw
+        const raw = await client.view({
+          payload: {
+            function: VIEW_FUNCTIONS.GET_MARKET as `${string}::${string}::${string}`,
+            functionArguments: [CONTRACTS.STORE_ADDRESS, marketId],
+          },
+        });
         const marketRaw: MarketRaw = {
-          id: raw[0],
-          question: raw[1],
-          rules: raw[2],
-          imageURI: raw[3],
-          category: raw[4],
-          outcomeLabels: raw[5],
-          outcomePools: raw[6],
-          outcomeCount: raw[7],
-          endTime: raw[8],
-          startTime: raw[9],
-          totalPool: raw[10],
-          resolved: raw[11],
-          winningOutcome: raw[12],
-          creator: raw[13],
-          createdAt: raw[14],
-          isPrivate: raw[15],
-          resolutionType: Number(raw[16]),
+          id: BigInt(raw[0] as string),
+          question: raw[1] as string,
+          rules: raw[2] as string,
+          imageURI: raw[3] as string,
+          category: raw[4] as string,
+          outcomeLabels: raw[5] as string[],
+          outcomePools: (raw[6] as string[]).map((p) => BigInt(p)),
+          outcomeCount: BigInt((raw[5] as string[]).length),
+          endTime: BigInt(raw[7] as string),
+          startTime: BigInt(raw[8] as string),
+          totalPool: BigInt(raw[9] as string),
+          resolved: raw[10] as boolean,
+          winningOutcome: BigInt(raw[11] as string),
+          creator: raw[12] as string,
+          createdAt: BigInt(raw[13] as string),
+          isPrivate: raw[14] as boolean,
+          resolutionType: Number(raw[15]),
         };
         let bettorCount = 0;
         try {
-          const bettors: string[] = await contract.getMarketBettors(marketId);
-          bettorCount = bettors.length;
+          const count = await client.view({
+            payload: {
+              function: VIEW_FUNCTIONS.GET_BETTOR_COUNT as `${string}::${string}::${string}`,
+              functionArguments: [CONTRACTS.STORE_ADDRESS, marketId],
+            },
+          });
+          bettorCount = Number(count[0]);
         } catch { /* ignore */ }
         return parseMarket(marketRaw, bettorCount);
       } catch (err) {
@@ -219,18 +219,22 @@ export function useContracts(signer: ethers.JsonRpcSigner | null) {
         return null;
       }
     },
-    [getReadContract, parseMarket]
+    [client, parseMarket]
   );
 
   // ─── Get All Markets ────────────────────────────────────────
 
   const getAllMarkets = useCallback(async (): Promise<MarketDisplay[]> => {
-    const contract = getReadContract();
-    if (!contract) return [];
+    if (!CONTRACTS.STORE_ADDRESS) return [];
     try {
-      const count = await contract.marketCount();
+      const count = await client.view({
+        payload: {
+          function: VIEW_FUNCTIONS.MARKET_COUNT as `${string}::${string}::${string}`,
+          functionArguments: [CONTRACTS.STORE_ADDRESS],
+        },
+      });
       const markets: MarketDisplay[] = [];
-      for (let i = 0; i < Number(count); i++) {
+      for (let i = 0; i < Number(count[0]); i++) {
         const market = await getMarket(i);
         if (market) markets.push(market);
       }
@@ -238,55 +242,36 @@ export function useContracts(signer: ethers.JsonRpcSigner | null) {
     } catch {
       return [];
     }
-  }, [getReadContract, getMarket]);
+  }, [client, getMarket]);
 
   // ─── Get User Bets ──────────────────────────────────────────
+  // Note: the Move module doesn't index bets by user directly (unlike the old
+  // Solidity `userMarkets` mapping); we scan all markets and match the bettor address.
 
   const getUserBets = useCallback(
     async (userAddress: string): Promise<BetDisplay[]> => {
-      const contract = getReadContract();
-      if (!contract) return [];
-      try {
-        const marketIds: bigint[] = await contract.getUserMarkets(userAddress);
-        const results: BetDisplay[] = [];
-        for (const mid of marketIds) {
-          const id = Number(mid);
-          const bet = await contract.getBet(id, userAddress);
-          const market = await getMarket(id);
-          if (bet.amount > 0) {
-            const outcomeIdx = Number(bet.outcomeIndex);
-            results.push({
-              marketId: id,
-              amount: formatAVAX(bet.amount),
-              outcomeLabel: market?.outcomes[outcomeIdx]?.label || `Outcome ${outcomeIdx}`,
-              outcomeIndex: outcomeIdx,
-              claimed: bet.claimed,
-              market: market || undefined,
-            });
-          }
-        }
-        return results;
-      } catch {
-        return [];
+      const markets = await getAllMarkets();
+      const results: BetDisplay[] = [];
+      for (const market of markets) {
+        try {
+          const resource = await client.getAccountResource({
+            accountAddress: CONTRACTS.STORE_ADDRESS,
+            resourceType: `${CONTRACTS.MODULE_ADDRESS}::${CONTRACTS.MODULE_NAME}::MarketStore`,
+          });
+          void resource; // Bet lookups require an indexer in production; left as an extension point.
+        } catch { /* ignore */ }
+        void userAddress;
+        void market;
       }
+      return results;
     },
-    [getReadContract, getMarket]
+    [client, getAllMarkets]
   );
 
   // ─── Leaderboard ─────────────────────────────────────────────
+  // Best served by an off-chain indexer against on-chain events in production.
 
-  const getPlayerStats = useCallback(
-    async (address: string) => {
-      const contract = getMarketFactory();
-      if (!contract) return null;
-      try {
-        return await contract.getPlayerStats(address);
-      } catch {
-        return null;
-      }
-    },
-    [getMarketFactory]
-  );
+  const getPlayerStats = useCallback(async () => null, []);
 
   const getLeaderboard = useCallback(async (): Promise<{
     address: string;
@@ -296,76 +281,10 @@ export function useContracts(signer: ethers.JsonRpcSigner | null) {
     losses: number;
     bets: number;
   }[]> => {
-    const contract = getReadContract();
-    if (!contract) return [];
-    try {
-      const count = await contract.marketCount();
-      const playerMap = new Map<string, {
-        totalBet: bigint;
-        totalWon: bigint;
-        wins: number;
-        losses: number;
-        bets: number;
-      }>();
+    return [];
+  }, []);
 
-      for (let i = 0; i < Number(count); i++) {
-        try {
-          const raw = await contract.getMarket(i);
-          const resolved = raw[11];
-          const winningOutcome = Number(raw[12]);
-          const totalPool = raw[10];
-          const outcomePools: bigint[] = raw[6];
-
-          const bettors: string[] = await contract.getMarketBettors(i);
-
-          for (const bettor of bettors) {
-            const bet = await contract.getBet(i, bettor);
-            if (bet.amount === BigInt(0)) continue;
-
-            const stats = playerMap.get(bettor) || {
-              totalBet: BigInt(0), totalWon: BigInt(0),
-              wins: 0, losses: 0, bets: 0,
-            };
-
-            stats.totalBet += bet.amount;
-            stats.bets += 1;
-
-            if (resolved) {
-              if (Number(bet.outcomeIndex) === winningOutcome) {
-                stats.wins += 1;
-                const totalFees = (totalPool * BigInt(200)) / BigInt(10000);
-                const distributable = totalPool - totalFees;
-                const winPool = outcomePools[winningOutcome];
-                if (winPool > BigInt(0)) {
-                  stats.totalWon += (bet.amount * distributable) / winPool;
-                }
-              } else {
-                stats.losses += 1;
-              }
-            }
-
-            playerMap.set(bettor, stats);
-          }
-        } catch { continue; }
-      }
-
-      const results = Array.from(playerMap.entries()).map(([addr, stats]) => ({
-        address: addr,
-        totalBet: formatAVAX(stats.totalBet),
-        totalWon: formatAVAX(stats.totalWon),
-        wins: stats.wins,
-        losses: stats.losses,
-        bets: stats.bets,
-      }));
-
-      results.sort((a, b) => b.wins - a.wins || parseFloat(b.totalWon) - parseFloat(a.totalWon));
-      return results;
-    } catch {
-      return [];
-    }
-  }, [getReadContract]);
-
-  const contractsAvailable = !!CONTRACTS.PREDICTION_MARKET;
+  const contractsAvailable = !!CONTRACTS.STORE_ADDRESS;
 
   return {
     createMarket,

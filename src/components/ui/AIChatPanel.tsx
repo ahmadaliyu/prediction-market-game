@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -43,7 +43,7 @@ export default function AIChatPanel({ market }: AIChatPanelProps) {
       const welcomeMsg: ChatMessage = {
         role: 'assistant',
         content: market
-          ? `I'm analyzing **"${market.question}"**. This ${market.category} market has ${market.totalPool} AVAX in the pool with ${market.timeRemaining} remaining. Ask me anything about the odds, strategy, or market dynamics!`
+          ? `I'm analyzing **"${market.question}"**. This ${market.category} market has ${market.totalPool} APT in the pool with ${market.timeRemaining} remaining. Ask me anything about the odds, strategy, or market dynamics!`
           : `Welcome to Prediction Arena AI! I can analyze markets, explain odds, discuss strategy, and help you make informed decisions. Select a market for specific insights, or ask me anything!`,
       };
       setMessages([welcomeMsg]);

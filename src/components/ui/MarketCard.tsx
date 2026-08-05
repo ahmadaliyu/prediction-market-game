@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { motion } from 'framer-motion';
 import { getCategoryConfig } from '@/lib/utils';
@@ -115,7 +115,7 @@ export default function MarketCard({ market, onClick, index = 0 }: MarketCardPro
                 <div className="flex justify-between text-xs mb-0.5">
                   <span className={`font-medium ${isWinner ? 'text-arena-green' : isUnclassified ? 'text-gray-500' : 'text-gray-300'}`}>
                     {outcome.label}
-                    {isWinner && ' ✓'}
+                    {isWinner && ' âœ“'}
                   </span>
                   <span className={`font-medium ${isWinner ? 'text-arena-green' : 'text-gray-400'}`}>
                     {outcome.percent}%
@@ -158,7 +158,7 @@ export default function MarketCard({ market, onClick, index = 0 }: MarketCardPro
         <div className="flex items-center gap-1.5">
           <TrendingUp className="w-3.5 h-3.5 text-arena-primary" />
           <span className="text-xs text-gray-400">Pool:</span>
-          <span className="text-xs text-arena-primary font-medium">{market.totalPool} AVAX</span>
+          <span className="text-xs text-arena-primary font-medium">{market.totalPool} APT</span>
         </div>
         <div className="flex items-center gap-1.5">
           <Users className="w-3.5 h-3.5 text-gray-500" />

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
@@ -122,7 +122,7 @@ export default function HomePage() {
               transition={{ delay: 1 }}
               className="text-xl text-gray-400 mb-6"
             >
-              AI-powered prediction markets on Avalanche. Bet against intelligent agents.
+              AI-powered prediction markets on Aptos. Bet against intelligent agents.
             </motion.p>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -160,7 +160,7 @@ export default function HomePage() {
         <div className="absolute inset-0 bg-arena-primary/[0.02]" />
         <div className="max-w-7xl mx-auto px-6 py-8 grid grid-cols-2 md:grid-cols-4 gap-6 relative">
           {[
-            { label: 'Total Volume', value: totalVolume.toFixed(2), suffix: ' AVAX', icon: BarChart3, color: 'text-arena-primary' },
+            { label: 'Total Volume', value: totalVolume.toFixed(2), suffix: ' APT', icon: BarChart3, color: 'text-arena-primary' },
             { label: 'Active Markets', value: activeMarkets.length.toString(), suffix: '', icon: TrendingUp, color: 'text-arena-accent' },
             { label: 'Players', value: playerCount.toString(), suffix: '', icon: Users, color: 'text-arena-secondary' },
             { label: 'AI Agents', value: AI_AGENTS.length.toString(), suffix: '', icon: Bot, color: 'text-purple-400' },
@@ -224,7 +224,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* AI Arena Intelligence — Real-time AI agent decisions */}
+      {/* AI Arena Intelligence â€” Real-time AI agent decisions */}
       <AIArenaSection markets={markets} />
 
       {/* Live Markets */}
@@ -307,7 +307,7 @@ export default function HomePage() {
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
         >
-          Prediction Arena &copy; {new Date().getFullYear()} &mdash; Built on Avalanche
+          Prediction Arena &copy; {new Date().getFullYear()} &mdash; Built on Aptos
         </motion.p>
       </footer>
     </div>

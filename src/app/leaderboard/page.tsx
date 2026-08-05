@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
@@ -91,7 +91,7 @@ export default function LeaderboardPage() {
         {players.length >= 1 && (
         <div className={`grid gap-4 mb-8 ${players.length >= 3 ? 'grid-cols-3' : players.length === 2 ? 'grid-cols-2' : 'grid-cols-1 max-w-sm mx-auto'}`}>
           {players.slice(0, 3).map((player, i) => {
-            const medals = ['🥇', '🥈', '🥉'];
+            const medals = ['ðŸ¥‡', 'ðŸ¥ˆ', 'ðŸ¥‰'];
             const glows = ['shadow-[0_0_30px_rgba(255,215,0,0.3)]', 'shadow-[0_0_20px_rgba(192,192,192,0.3)]', 'shadow-[0_0_20px_rgba(205,127,50,0.3)]'];
             const pnlNum = parseFloat(player.pnl);
             return (
@@ -117,7 +117,7 @@ export default function LeaderboardPage() {
                   <div className="flex justify-between text-xs">
                     <span className="text-gray-400">P&L</span>
                     <span className={`font-bold ${pnlNum >= 0 ? 'text-arena-green' : 'text-red-400'}`}>
-                      {pnlNum >= 0 ? '+' : ''}{player.pnl} AVAX
+                      {pnlNum >= 0 ? '+' : ''}{player.pnl} APT
                     </span>
                   </div>
                 </div>
@@ -170,10 +170,10 @@ export default function LeaderboardPage() {
                       </span>
                     </td>
                     <td className="px-5 py-3.5 text-right">
-                      <span className="text-sm text-gray-300">{player.totalBet} AVAX</span>
+                      <span className="text-sm text-gray-300">{player.totalBet} APT</span>
                     </td>
                     <td className="px-5 py-3.5 text-right">
-                      <span className="text-sm text-gray-300">{player.totalWon} AVAX</span>
+                      <span className="text-sm text-gray-300">{player.totalWon} APT</span>
                     </td>
                     <td className="px-5 py-3.5 text-right">
                       <span className={`text-sm font-medium ${pnlNum >= 0 ? 'text-arena-green' : 'text-red-400'}`}>

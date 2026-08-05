@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
@@ -166,7 +166,7 @@ export default function MarketOrb({
         outlineWidth={0.01}
         outlineColor="#000000"
       >
-        {`${totalPool} AVAX`}
+        {`${totalPool} APT`}
       </Text>
     </group>
   );

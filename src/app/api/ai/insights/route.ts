@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 import { getOpenAI, SYSTEM_PROMPTS, MarketContext, AIInsight } from '@/lib/ai';
 
-// POST /api/ai/insights — Generate AI insights for a specific market
+// POST /api/ai/insights â€” Generate AI insights for a specific market
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     const openai = getOpenAI();
 
     const outcomesDescription = market.outcomes
-      .map((o) => `${o.label}: ${o.percent}% (${o.pool} AVAX in pool)`)
+      .map((o) => `${o.label}: ${o.percent}% (${o.pool} APT in pool)`)
       .join('\n');
 
     const prompt = `Analyze this prediction market and provide your insight:
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
 **Question:** ${market.question}
 **Category:** ${market.category}
 **Status:** ${market.status}
-**Total Pool:** ${market.totalPool} AVAX
+**Total Pool:** ${market.totalPool} APT
 **Time Remaining:** ${market.timeRemaining}
 
 **Outcomes:**

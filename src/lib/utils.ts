@@ -1,35 +1,34 @@
 import { MarketDisplay } from './types';
-import { ethers } from 'ethers';
 
 /**
- * Shorten an Ethereum address for display
+ * Shorten an Aptos address for display
  */
 export function shortenAddress(address: string, chars = 4): string {
   if (!address) return '';
   return `${address.slice(0, chars + 2)}...${address.slice(-chars)}`;
 }
 
+const OCTAS_PER_APT = 100_000_000; // 1 APT = 1e8 octas
+
 /**
- * Format AVAX amount from wei to display string (precision-safe via ethers)
+ * Format APT amount from octas to display string
  */
-export function formatAVAX(wei: bigint | string, decimals = 4): string {
-  const value = typeof wei === 'string' ? BigInt(wei) : wei;
-  const formatted = ethers.formatEther(value);
-  // Round to desired decimal places
-  const num = parseFloat(formatted);
+export function formatAVAX(octas: bigint | string, decimals = 4): string {
+  const value = typeof octas === 'string' ? BigInt(octas) : octas;
+  const num = Number(value) / OCTAS_PER_APT;
   if (num === 0) return '0';
-  // Show up to `decimals` places, but trim trailing zeros
   const fixed = num.toFixed(decimals);
   // Remove unnecessary trailing zeros: "2.0000" -> "2.0", "1.2500" -> "1.25"
   return fixed.replace(/(\.\d*?)0+$/, '$1').replace(/\.$/, '.0');
 }
 
 /**
- * Parse AVAX display string to wei (precision-safe via ethers)
+ * Parse APT display string to octas
  */
-export function parseAVAX(avax: string): bigint {
-  return ethers.parseEther(avax);
+export function parseAVAX(apt: string): bigint {
+  return BigInt(Math.round(parseFloat(apt || '0') * OCTAS_PER_APT));
 }
+
 
 /**
  * Format time remaining from unix timestamp

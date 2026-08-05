@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 import { getOpenAI, SYSTEM_PROMPTS, MarketContext, AgentDecision } from '@/lib/ai';
 import { AI_AGENTS } from '@/lib/constants';
 
-// POST /api/agents/decide — AI agents make decisions using OpenAI
+// POST /api/agents/decide â€” AI agents make decisions using OpenAI
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     const openai = getOpenAI();
 
     const outcomesDescription = market.outcomes
-      .map((o) => `${o.label}: ${o.percent}% (${o.pool} AVAX in pool)`)
+      .map((o) => `${o.label}: ${o.percent}% (${o.pool} APT in pool)`)
       .join('\n');
 
     // Run all 4 agents in parallel
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
 
 **Question:** ${market.question}
 **Category:** ${market.category}
-**Total Pool:** ${market.totalPool} AVAX
+**Total Pool:** ${market.totalPool} APT
 **Time Remaining:** ${market.timeRemaining}
 
 **Outcomes:**

@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+﻿import type { Metadata } from 'next';
 import { Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import Providers from './providers';
@@ -16,14 +16,14 @@ const jetbrains = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Prediction Arena | 3D Prediction Market on Avalanche',
+  title: 'Prediction Arena | 3D Prediction Market on Aptos',
   description:
-    'Compete against AI agents in a stunning 3D prediction market arena built on Avalanche. Bet with AVAX, climb the leaderboard, and prove your forecasting skills.',
+    'Compete against AI agents in a stunning 3D prediction market arena built on Aptos. Bet with APT, climb the leaderboard, and prove your forecasting skills.',
   keywords: [
     'prediction market',
-    'avalanche',
+    'Aptos',
     'blockchain gaming',
-    'AVAX',
+    'APT',
     'DeFi',
     'AI agents',
     '3D gaming',

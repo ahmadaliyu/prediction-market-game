@@ -1,49 +1,60 @@
 
-export const AVALANCHE_FUJI = {
-  chainId: 43113,
-  chainIdHex: '0xA869',
-  chainName: 'Avalanche Fuji Testnet',
-  rpcUrls: ['https://avalanche-fuji-c-chain-rpc.publicnode.com'],
+// ─── Aptos Networks ────────────────────────────────────────────
+
+export const APTOS_TESTNET = {
+  network: 'testnet' as const,
+  chainName: 'Aptos Testnet',
+  rpcUrls: ['https://fullnode.testnet.aptoslabs.com/v1'],
   nativeCurrency: {
-    name: 'AVAX',
-    symbol: 'AVAX',
-    decimals: 18,
+    name: 'Aptos',
+    symbol: 'APT',
+    decimals: 8,
   },
-  blockExplorerUrls: ['https://testnet.snowtrace.io/'],
+  blockExplorerUrls: ['https://explorer.aptoslabs.com/?network=testnet'],
 };
 
-export const AVALANCHE_MAINNET = {
-  chainId: 43114,
-  chainIdHex: '0xA86A',
-  chainName: 'Avalanche C-Chain',
-  rpcUrls: ['https://api.avax.network/ext/bc/C/rpc'],
+export const APTOS_MAINNET = {
+  network: 'mainnet' as const,
+  chainName: 'Aptos Mainnet',
+  rpcUrls: ['https://fullnode.mainnet.aptoslabs.com/v1'],
   nativeCurrency: {
-    name: 'AVAX',
-    symbol: 'AVAX',
-    decimals: 18,
+    name: 'Aptos',
+    symbol: 'APT',
+    decimals: 8,
   },
-  blockExplorerUrls: ['https://snowtrace.io/'],
+  blockExplorerUrls: ['https://explorer.aptoslabs.com/?network=mainnet'],
 };
 
-export const LOCALHOST = {
-  chainId: 31337,
-  chainIdHex: '0x7A69',
-  chainName: 'Localhost 8545',
-  rpcUrls: ['http://127.0.0.1:8545'],
+export const APTOS_LOCALNET = {
+  network: 'local' as const,
+  chainName: 'Aptos Localnet',
+  rpcUrls: ['http://127.0.0.1:8080/v1'],
   nativeCurrency: {
-    name: 'ETH',
-    symbol: 'ETH',
-    decimals: 18,
+    name: 'Aptos',
+    symbol: 'APT',
+    decimals: 8,
   },
   blockExplorerUrls: [''],
 };
 
-// Use Fuji in production, localhost in development
-export const ACTIVE_CHAIN = process.env.NODE_ENV === 'production' ? AVALANCHE_FUJI : LOCALHOST;
+// Use testnet in production, localnet in development
+export const ACTIVE_CHAIN = process.env.NODE_ENV === 'production' ? APTOS_TESTNET : APTOS_LOCALNET;
+
+// ─── Shelby (decentralized storage protocol) ───────────────────
+// Used to store market images/metadata off-chain instead of centralized hosting.
+export const SHELBY = {
+  network: 'shelbynet',
+  rpcUrl: process.env.NEXT_PUBLIC_SHELBY_RPC_URL || 'https://api.shelby.xyz/shelby',
+  apiKey: process.env.NEXT_PUBLIC_SHELBY_API_KEY || '',
+};
 
 export const CONTRACTS = {
-  PREDICTION_MARKET: process.env.NEXT_PUBLIC_PREDICTION_MARKET_ADDRESS || '',
-  MARKET_FACTORY: process.env.NEXT_PUBLIC_MARKET_FACTORY_ADDRESS || '',
+  // Address the `prediction_market` Move module is published under.
+  MODULE_ADDRESS: process.env.NEXT_PUBLIC_MODULE_ADDRESS || '',
+  MODULE_NAME: 'market',
+  // Resource-account address holding the MarketStore + coin vault (same as MODULE_ADDRESS
+  // unless deployed via a separate resource account).
+  STORE_ADDRESS: process.env.NEXT_PUBLIC_STORE_ADDRESS || process.env.NEXT_PUBLIC_MODULE_ADDRESS || '',
 };
 
 export const CATEGORIES = [

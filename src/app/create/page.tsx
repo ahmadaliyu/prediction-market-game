@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -260,7 +260,7 @@ export default function CreatePage() {
             <h1 className="text-3xl font-bold text-white">Create Market</h1>
           </div>
           <p className="text-gray-400">
-            Launch a new prediction market • Earn 1.2% of trading volume
+            Launch a new prediction market â€¢ Earn 1.2% of trading volume
           </p>
         </motion.div>
 
@@ -637,10 +637,10 @@ export default function CreatePage() {
                     <div className="px-5 pb-5 space-y-4">
                       <div>
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm text-gray-400">Amount (AVAX)</span>
+                          <span className="text-sm text-gray-400">Amount (APT)</span>
                           {balance && (
                             <span className="text-xs text-gray-500">
-                              Balance: {parseFloat(balance).toFixed(4)} AVAX
+                              Balance: {parseFloat(balance).toFixed(4)} APT
                             </span>
                           )}
                         </div>
@@ -662,7 +662,7 @@ export default function CreatePage() {
                         </p>
                         <div className="flex justify-between">
                           <span>Platform Fee (0.8%)</span>
-                          <span>{initialLiquidity ? (parseFloat(initialLiquidity) * 0.008).toFixed(6) : '0'} AVAX</span>
+                          <span>{initialLiquidity ? (parseFloat(initialLiquidity) * 0.008).toFixed(6) : '0'} APT</span>
                         </div>
                       </div>
                     </div>

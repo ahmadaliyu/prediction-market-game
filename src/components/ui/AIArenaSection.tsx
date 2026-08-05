@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -24,9 +24,9 @@ const personalityIcons: Record<string, typeof Brain> = {
 };
 
 const betSizeLabels = {
-  small: { label: '0.1 AVAX', color: 'text-gray-400' },
-  medium: { label: '0.5 AVAX', color: 'text-yellow-400' },
-  large: { label: '1.0 AVAX', color: 'text-red-400' },
+  small: { label: '0.1 APT', color: 'text-gray-400' },
+  medium: { label: '0.5 APT', color: 'text-yellow-400' },
+  large: { label: '1.0 APT', color: 'text-red-400' },
 };
 
 interface AIArenaProps {
@@ -176,10 +176,10 @@ export default function AIArenaSection({ markets }: AIArenaProps) {
                 {selectedMarket.question}
               </h3>
               <div className="flex items-center gap-3 text-xs text-gray-400">
-                <span>Pool: {selectedMarket.totalPool} AVAX</span>
-                <span>•</span>
+                <span>Pool: {selectedMarket.totalPool} APT</span>
+                <span>â€¢</span>
                 <span>{selectedMarket.timeRemaining}</span>
-                <span>•</span>
+                <span>â€¢</span>
                 <span className="capitalize">{selectedMarket.category}</span>
               </div>
             </div>
@@ -287,7 +287,7 @@ export default function AIArenaSection({ markets }: AIArenaProps) {
                         className="w-10 h-10 rounded-xl flex items-center justify-center text-lg relative"
                         style={{ backgroundColor: `${decision.color}20` }}
                       >
-                        {agent?.avatar || '🤖'}
+                        {agent?.avatar || 'ðŸ¤–'}
                         <motion.div
                           animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0, 0.5] }}
                           transition={{ repeat: Infinity, duration: 3 }}

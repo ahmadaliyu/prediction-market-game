@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 import { getOpenAI, SYSTEM_PROMPTS, ChatMessage, MarketContext } from '@/lib/ai';
 
-// POST /api/ai/chat — AI-powered chat about prediction markets
+// POST /api/ai/chat â€” AI-powered chat about prediction markets
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -21,14 +21,14 @@ export async function POST(request: NextRequest) {
 
     if (market) {
       const outcomesDescription = market.outcomes
-        .map((o) => `${o.label}: ${o.percent}% (${o.pool} AVAX)`)
+        .map((o) => `${o.label}: ${o.percent}% (${o.pool} APT)`)
         .join(', ');
 
       systemPrompt += `\n\nThe user is currently viewing this market:
 Question: "${market.question}"
 Category: ${market.category}
 Status: ${market.status}
-Total Pool: ${market.totalPool} AVAX
+Total Pool: ${market.totalPool} APT
 Time Remaining: ${market.timeRemaining}
 Outcomes: ${outcomesDescription}
 

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
@@ -108,21 +108,21 @@ export default function PortfolioPage() {
             className="bg-arena-card border border-arena-border rounded-xl p-4"
           >
             <p className="text-xs text-gray-400 mb-1">Balance</p>
-            <p className="text-xl font-bold text-white">{parseFloat(balance).toFixed(3)} AVAX</p>
+            <p className="text-xl font-bold text-white">{parseFloat(balance).toFixed(3)} APT</p>
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
             className="bg-arena-card border border-arena-border rounded-xl p-4"
           >
             <p className="text-xs text-gray-400 mb-1">Total Bet</p>
-            <p className="text-xl font-bold text-white">{totalBet.toFixed(4)} AVAX</p>
+            <p className="text-xl font-bold text-white">{totalBet.toFixed(4)} APT</p>
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
             className="bg-arena-card border border-arena-border rounded-xl p-4"
           >
             <p className="text-xs text-gray-400 mb-1">Total Won</p>
-            <p className="text-xl font-bold text-arena-green">{totalWon.toFixed(4)} AVAX</p>
+            <p className="text-xl font-bold text-arena-green">{totalWon.toFixed(4)} APT</p>
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
@@ -172,15 +172,15 @@ export default function PortfolioPage() {
                           }`}>
                             {bet.outcomeLabel}
                           </span>
-                          <span className="text-gray-400">{bet.amount} AVAX</span>
-                          <span className="text-gray-500">•</span>
+                          <span className="text-gray-400">{bet.amount} APT</span>
+                          <span className="text-gray-500">â€¢</span>
                           <span className="text-gray-400">{bet.market?.timeRemaining}</span>
                         </div>
                       </div>
                       <div className="text-right">
                         <p className="text-xs text-gray-400">Potential Payout</p>
                         <p className="text-sm font-bold text-arena-primary flex items-center gap-1 justify-end">
-                          <TrendingUp className="w-3 h-3" /> {bet.potentialPayout || '—'} AVAX
+                          <TrendingUp className="w-3 h-3" /> {bet.potentialPayout || 'â€”'} APT
                         </p>
                       </div>
                     </motion.div>
@@ -212,7 +212,7 @@ export default function PortfolioPage() {
                             }`}>
                               {bet.outcomeLabel}
                             </span>
-                            <span className="text-gray-400">{bet.amount} AVAX</span>
+                            <span className="text-gray-400">{bet.amount} APT</span>
                           </div>
                         </div>
                         <div className="text-right flex items-center gap-2">
@@ -236,7 +236,7 @@ export default function PortfolioPage() {
                           ) : (
                             <>
                               <XCircle className="w-4 h-4 text-red-400" />
-                              <span className="text-sm font-bold text-red-400">-{bet.amount} AVAX</span>
+                              <span className="text-sm font-bold text-red-400">-{bet.amount} APT</span>
                             </>
                           )}
                         </div>

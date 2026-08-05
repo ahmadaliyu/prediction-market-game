@@ -2,35 +2,30 @@
   "name": "prediction-market-game",
   "version": "1.0.0",
   "private": true,
-  "description": "3D Prediction Market Game on Avalanche — AI agents compete in a sci-fi arena",
+  "description": "3D Prediction Market Game on Aptos — AI agents compete in a sci-fi arena",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "compile": "hardhat compile",
-    "test:contracts": "hardhat test",
-    "deploy:fuji": "hardhat ignition deploy ignition/modules/PredictionMarket.ts --network fuji && node scripts/print-deployments.js 43113",
-    "deploy:local": "hardhat ignition deploy ignition/modules/PredictionMarket.ts --network localhost && node scripts/print-deployments.js 31337",
-    "print:deploy:local": "node scripts/print-deployments.js 31337",
-    "print:deploy:fuji": "node scripts/print-deployments.js 43113",
-    "reset:deploy:local": "node scripts/reset-deployments.js 31337",
-    "reset:deploy:fuji": "node scripts/reset-deployments.js 43113",
-    "node:local": "hardhat node",
-    "local": "bash scripts/start-local.sh"
+    "move:compile": "aptos move compile --package-dir move",
+    "move:publish:testnet": "aptos move publish --package-dir move --profile testnet",
+    "move:publish:local": "aptos move publish --package-dir move --profile local"
   },
   "dependencies": {
+    "@aptos-labs/ts-sdk": "^1.33.1",
+    "@aptos-labs/wallet-adapter-react": "^3.6.0",
     "@react-three/drei": "^9.117.0",
     "@react-three/fiber": "^8.17.10",
     "@react-three/postprocessing": "^2.16.4",
     "autoprefixer": "^10.4.20",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
-    "ethers": "^6.13.4",
     "framer-motion": "^11.15.0",
     "lucide-react": "^0.468.0",
     "next": "14.2.21",
     "openai": "^6.22.0",
+    "petra-plugin-wallet-adapter": "^0.4.5",
     "postcss": "^8.4.49",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -40,11 +35,6 @@
     "zustand": "^5.0.2"
   },
   "devDependencies": {
-    "@nomicfoundation/hardhat-ethers": "^3.0.8",
-    "@nomicfoundation/hardhat-ignition-viem": "^0.15.11",
-    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
-    "@typechain/ethers-v6": "^0.5.1",
-    "@typechain/hardhat": "^9.1.0",
     "@types/node": "^22.10.2",
     "@types/react": "^19.0.2",
     "@types/react-dom": "^19.0.2",
@@ -52,8 +42,7 @@
     "dotenv": "^16.4.7",
     "eslint": "^8.56.0",
     "eslint-config-next": "14.2.21",
-    "hardhat": "^2.22.17",
-    "typechain": "^8.3.2",
     "typescript": "^5.7.2"
   }
 }
+

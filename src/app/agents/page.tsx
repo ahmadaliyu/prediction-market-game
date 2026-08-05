@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -22,7 +22,7 @@ import { useMarketStore } from '@/store';
 import { AI_AGENTS } from '@/lib/constants';
 import { MarketDisplay } from '@/lib/types';
 
-// ─── Types ───────────────────────────────────────────────────
+// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 interface AgentDecision {
   agent: string;
@@ -46,7 +46,7 @@ interface AgentStats {
   }[];
 }
 
-// ─── Constants ───────────────────────────────────────────────
+// â”€â”€â”€ Constants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const personalityIcons: Record<string, typeof Brain> = {
   aggressive: Zap,
@@ -67,12 +67,12 @@ const personalityDescriptions: Record<string, string> = {
 };
 
 const betSizeLabels = {
-  small: { label: '0.1 AVAX', color: 'text-gray-400' },
-  medium: { label: '0.5 AVAX', color: 'text-yellow-400' },
-  large: { label: '1.0 AVAX', color: 'text-red-400' },
+  small: { label: '0.1 APT', color: 'text-gray-400' },
+  medium: { label: '0.5 APT', color: 'text-yellow-400' },
+  large: { label: '1.0 APT', color: 'text-red-400' },
 };
 
-// ─── Component ───────────────────────────────────────────────
+// â”€â”€â”€ Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export default function AgentsPage() {
   const markets = useMarketStore((s) => s.markets);
@@ -413,10 +413,10 @@ export default function AgentsPage() {
                 <div className="bg-arena-dark rounded-xl p-4 mb-4">
                   <h4 className="font-bold text-white mb-2">{selectedMarket.question}</h4>
                   <div className="flex items-center gap-3 text-xs text-gray-400 mb-3">
-                    <span>Pool: {selectedMarket.totalPool} AVAX</span>
-                    <span>•</span>
+                    <span>Pool: {selectedMarket.totalPool} APT</span>
+                    <span>â€¢</span>
                     <span>{selectedMarket.timeRemaining}</span>
-                    <span>•</span>
+                    <span>â€¢</span>
                     <span className="capitalize">{selectedMarket.category}</span>
                   </div>
                   <div className="space-y-1.5">
@@ -533,7 +533,7 @@ export default function AgentsPage() {
               <div className="bg-arena-card border border-arena-border rounded-2xl p-5">
                 <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
                   <BarChart3 className="w-5 h-5 text-purple-400" />
-                  All Agents — Side by Side
+                  All Agents â€” Side by Side
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {currentDecisions.map((decision, i) => {

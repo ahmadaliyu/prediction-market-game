@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -27,27 +27,13 @@ export default function WalletButton() {
 
   const handleSwitchWallet = async () => {
     setShowDropdown(false);
-    // Request wallet to show account picker
-    if (window.ethereum) {
-      try {
-        try {
-          await window.ethereum.request({
-            method: 'wallet_requestPermissions',
-            params: [{ eth_accounts: {} }],
-          });
-        } catch (permissionError) {
-          const code = (permissionError as { code?: number })?.code;
-          // Ignore user rejection/pending request and fall back to connect
-          if (code !== 4001 && code !== -32002 && code !== -32601) {
-            console.warn('wallet_requestPermissions failed:', permissionError);
-          }
-        }
-
-        // After permission attempt, reconnect to refresh the active account
-        await connect();
-      } catch (err) {
-        console.error('Switch wallet error:', err);
-      }
+    // Aptos wallet-adapter-react doesn't have an account-picker RPC method like
+    // EVM's wallet_requestPermissions â€” disconnect then reconnect to pick a wallet/account.
+    try {
+      disconnect();
+      await connect();
+    } catch (err) {
+      console.error('Switch wallet error:', err);
     }
   };
 
@@ -89,7 +75,7 @@ export default function WalletButton() {
         className="flex items-center gap-2 px-4 py-2.5 bg-red-500/20 border border-red-500/50 
                    rounded-xl hover:border-red-500 transition-all duration-300"
       >
-        <span className="text-sm font-medium text-red-400">Switch to Avalanche</span>
+        <span className="text-sm font-medium text-red-400">Switch to Aptos</span>
       </button>
     );
   }
@@ -103,7 +89,7 @@ export default function WalletButton() {
       >
         <div className="w-2 h-2 rounded-full bg-arena-green animate-pulse" />
         <span className="text-sm font-mono text-white">{shortenAddress(address!)}</span>
-        <span className="text-xs text-arena-primary">{parseFloat(balance).toFixed(3)} AVAX</span>
+        <span className="text-xs text-arena-primary">{parseFloat(balance).toFixed(3)} APT</span>
         <ChevronDown className="w-3 h-3 text-gray-400" />
       </button>
 
@@ -124,7 +110,7 @@ export default function WalletButton() {
 
             <div className="p-4 border-b border-arena-border">
               <p className="text-xs text-gray-400 mb-1">Balance</p>
-              <p className="text-lg font-bold text-white">{parseFloat(balance).toFixed(4)} AVAX</p>
+              <p className="text-lg font-bold text-white">{parseFloat(balance).toFixed(4)} APT</p>
             </div>
 
             <div className="p-2">

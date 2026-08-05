@@ -3,7 +3,6 @@
 import { createContext, useContext, ReactNode } from 'react';
 import { useWallet } from '@/hooks/useWallet';
 import { useContracts } from '@/hooks/useContracts';
-import { ethers } from 'ethers';
 
 interface WalletContextType {
   address: string | null;
@@ -11,8 +10,6 @@ interface WalletContextType {
   chainId: number | null;
   balance: string;
   isCorrectChain: boolean;
-  provider: ethers.BrowserProvider | null;
-  signer: ethers.JsonRpcSigner | null;
   connect: () => Promise<string | undefined>;
   disconnect: () => void;
   switchChain: () => Promise<void>;
@@ -37,3 +34,4 @@ export function useWalletContext() {
   if (!ctx) throw new Error('useWalletContext must be used within WalletProvider');
   return ctx;
 }
+
