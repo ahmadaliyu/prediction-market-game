@@ -1,13 +1,15 @@
 ﻿'use client';
 
 import { useCallback } from 'react';
-import { Aptos, AptosConfig, InputTransactionData } from '@aptos-labs/ts-sdk';
+import { Aptos, AptosConfig } from '@aptos-labs/ts-sdk';
 import { ENTRY_FUNCTIONS, VIEW_FUNCTIONS } from '@/lib/abis';
 import { CONTRACTS, ACTIVE_CHAIN } from '@/lib/constants';
 import { MarketRaw, MarketDisplay, BetDisplay, OutcomeDisplay } from '@/lib/types';
 import { formatAVAX, formatTimeRemaining, parseAVAX } from '@/lib/utils';
 
-type SignAndSubmit = (tx: InputTransactionData) => Promise<{ hash: string }>;
+// Matches the shape returned by @aptos-labs/wallet-adapter-react's useWallet().signAndSubmitTransaction
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type SignAndSubmit = (tx: any) => Promise<{ hash: string }>;
 
 function getClient() {
   return new Aptos(new AptosConfig({ network: ACTIVE_CHAIN.network, fullnode: ACTIVE_CHAIN.rpcUrls[0] }));

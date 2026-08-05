@@ -1,8 +1,9 @@
+import { Network } from '@aptos-labs/ts-sdk';
 
 // ─── Aptos Networks ────────────────────────────────────────────
 
 export const APTOS_TESTNET = {
-  network: 'testnet' as const,
+  network: Network.TESTNET,
   chainName: 'Aptos Testnet',
   rpcUrls: ['https://fullnode.testnet.aptoslabs.com/v1'],
   nativeCurrency: {
@@ -14,7 +15,7 @@ export const APTOS_TESTNET = {
 };
 
 export const APTOS_MAINNET = {
-  network: 'mainnet' as const,
+  network: Network.MAINNET,
   chainName: 'Aptos Mainnet',
   rpcUrls: ['https://fullnode.mainnet.aptoslabs.com/v1'],
   nativeCurrency: {
@@ -26,7 +27,7 @@ export const APTOS_MAINNET = {
 };
 
 export const APTOS_LOCALNET = {
-  network: 'local' as const,
+  network: Network.LOCAL,
   chainName: 'Aptos Localnet',
   rpcUrls: ['http://127.0.0.1:8080/v1'],
   nativeCurrency: {
