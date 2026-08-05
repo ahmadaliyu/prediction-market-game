@@ -11,10 +11,8 @@ out/
 build/
 dist/
 
-# Hardhat
-cache/
-artifacts/
-typechain-types/
+# Move build output
+move/build/
 
 # Environment
 .env
